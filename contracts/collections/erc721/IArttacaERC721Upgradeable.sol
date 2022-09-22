@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Arttaca Contracts (last updated v1.0.0) (collections/common/IArrtacaERC721Upgradeable.sol)
+// Arttaca Contracts (last updated v1.0.0) (collections/common/IArttacaERC721Upgradeable.sol)
 
 pragma solidity ^0.8.4;
 
@@ -11,7 +11,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol"
  * Contains the basic methods and functionalities that will be used for
  * Arttaca collections.
  */
-interface IArrtacaERC721Upgradeable is IERC721Upgradeable {
+interface IArttacaERC721Upgradeable is IERC721Upgradeable {
 
     /**
      * @dev Allows Owner to mint new assets in the collection.
