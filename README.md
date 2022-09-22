@@ -11,7 +11,7 @@ The source code in this repo has been created from scratch but uses OpenZeppelin
 
 - [Getting Started](#getting-started)
   - [Requirements](#requirements)
-  - [usage](#usage)
+  - [Usage](#usage)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
 
