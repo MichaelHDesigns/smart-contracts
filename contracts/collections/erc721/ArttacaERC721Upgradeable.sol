@@ -4,19 +4,19 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
 
+import "../../utils/VerifySignature.sol";
 import "./IArttacaERC721Upgradeable.sol";
 
 /**
  * @title ArttacaERC721Upgradeable
  * @dev This contract is an Arttaca ERC721 upgradeable collection.
  */
-contract ArttacaERC721Upgradeable is OwnableUpgradeable, ERC721Upgradeable, IArttacaERC721Upgradeable {
+contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721BurnableUpgradeable, IArttacaERC721Upgradeable {
 
     address[] public splits;
     uint[] public shares;
-    mapping(uint => bytes) mintDataList;
 
     function __ArttacaERC721_initialize(
         address _owner,
@@ -37,8 +37,14 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, ERC721Upgradeable, IArt
         _mint(_to, _tokenId);
     }
 
-    function mintAndTransfer(address _to, uint _tokenId, bytes calldata _mintData) override external onlyOwner {
-        mintDataList[_tokenId] = _mintData;
+    function mintAndTransfer(address _to, uint _tokenId, bytes calldata _mintData) override external {
+        (address signer, uint maxSupply, uint expirationTimestamp, bytes memory signature) = splitMintData(_mintData);
+        require(owner() == signer, "ArttacaERC721Upgradeable:mintAndTransfer:: Signer is not the owner.");
+        require(block.timestamp <= expirationTimestamp, "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is expired.");
+        require(
+            verifyMint(signer, _tokenId, maxSupply, 1, expirationTimestamp, signature),
+            "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is not valid."
+        );
         _mint(_to, _tokenId);
     }
 }
