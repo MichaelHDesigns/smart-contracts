@@ -31,6 +31,9 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, VerifySignature, ERC11
     ) public initializer {
         __ERC1155_init("");
         __Ownable_init();
+        __Pausable_init();
+        __ERC1155Burnable_init();
+        __ERC1155Supply_init();
         _transferOwnership(_owner);
 
         name = _name;
@@ -59,6 +62,14 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, VerifySignature, ERC11
             "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is not valid."
         );
         _mint(_to, _tokenId, _quantity, _data);
+    }
+
+    function pause() public virtual onlyOwner {
+        _pause();
+    }
+
+    function unpause() public virtual onlyOwner {
+        _unpause();
     }
 
     function _beforeTokenTransfer(
