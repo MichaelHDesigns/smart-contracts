@@ -3,7 +3,6 @@
 
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 
 import "./ArttacaERC721Upgradeable.sol";
@@ -13,7 +12,7 @@ import "./ArttacaERC721Beacon.sol";
  * @title ArttacaERC721Factory
  * @dev This contract is a factory to create ERC721 collections.
  */
-contract ArttacaERC721Factory is Ownable {
+contract ArttacaERC721Factory {
 
     mapping(uint => address) private collections;
     uint public collectionsCount;
@@ -26,7 +25,8 @@ contract ArttacaERC721Factory is Ownable {
         address indexed collectionAddress,
         address indexed owner,
         string name,
-        string symbol,
+        string indexed symbol,
+        string baseURI,
         address[] splits,
         uint[] shares
     );
@@ -38,9 +38,10 @@ contract ArttacaERC721Factory is Ownable {
     function createCollection(
         string memory _name,
         string memory _symbol,
+        string memory _baseURI,
         address[] memory _splits,
         uint[] memory _shares
-    ) external onlyOwner returns (address) {
+    ) external returns (address) {
 
         BeaconProxy collection = new BeaconProxy(
             address(beacon),
@@ -49,6 +50,7 @@ contract ArttacaERC721Factory is Ownable {
                 msg.sender,
                 _name,
                 _symbol,
+                _baseURI, 
                 _splits,
                 _shares
             )
@@ -59,9 +61,10 @@ contract ArttacaERC721Factory is Ownable {
 
         emit Arrtaca721Created(
             newCollectionAddress,
-            _msgSender(),
+            msg.sender,
             _name,
             _symbol,
+            _baseURI,
             _splits,
             _shares
         );

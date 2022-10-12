@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155BurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
 
 import "../../utils/VerifySignature.sol";
 import "./IArttacaERC1155Upgradeable.sol";
@@ -15,7 +16,7 @@ import "./IArttacaERC1155Upgradeable.sol";
  * @title ArttacaERC1155Upgradeable
  * @dev This contract is an Arttaca ERC1155 upgradeable collection.
  */
-contract ArttacaERC1155Upgradeable is OwnableUpgradeable, VerifySignature, ERC1155SupplyUpgradeable, ERC1155BurnableUpgradeable, ERC1155PausableUpgradeable, IArttacaERC1155Upgradeable {
+contract ArttacaERC1155Upgradeable is OwnableUpgradeable, VerifySignature, ERC1155SupplyUpgradeable, ERC1155BurnableUpgradeable, ERC1155PausableUpgradeable, ERC2981Upgradeable, IArttacaERC1155Upgradeable {
 
     string name;
     string symbol;
@@ -53,14 +54,15 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, VerifySignature, ERC11
         bytes calldata _mintData,
         bytes calldata _data
     ) override external onlyOwner {
-        (address signer, uint maxSupply, uint expirationTimestamp, bytes memory signature) = splitMintData(_mintData);
-        require(owner() == signer, "ArttacaERC721Upgradeable:mintAndTransfer:: Signer is not the owner.");
-        require(block.timestamp <= expirationTimestamp, "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is expired.");
-        require(maxSupply >= totalSupply(_tokenId) + _quantity, "ArttacaERC721Upgradeable:mintAndTransfer:: Signed MaxSupply is not sufficient to comply with the requested quantity.");
-        require(
-            verifyMint(signer, _tokenId, maxSupply, _quantity, expirationTimestamp, signature),
-            "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is not valid."
-        );
+        // (address signer, uint maxSupply, uint expirationTimestamp, bytes memory signature) = splitMintData(_mintData);
+        // require(owner() == signer, "ArttacaERC721Upgradeable:mintAndTransfer:: Signer is not the owner.");
+        // require(block.timestamp <= expirationTimestamp, "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is expired.");
+        // require(maxSupply >= totalSupply(_tokenId) + _quantity, "ArttacaERC721Upgradeable:mintAndTransfer:: Signed MaxSupply is not sufficient to comply with the requested quantity.");
+        // require(
+        //     verifyMint(address(this), signer, _to, _tokenId, maxSupply, _quantity, expirationTimestamp, signature),
+        //     "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is not valid."
+        // );
+        // todo consider maxsupply
         _mint(_to, _tokenId, _quantity, _data);
     }
 
@@ -70,6 +72,13 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, VerifySignature, ERC11
 
     function unpause() public virtual onlyOwner {
         _unpause();
+    }
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165Upgradeable, ERC1155Upgradeable, ERC2981Upgradeable) returns (bool) {
+        return interfaceId == type(IArttacaERC1155Upgradeable).interfaceId || super.supportsInterface(interfaceId);
     }
 
     function _beforeTokenTransfer(

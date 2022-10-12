@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Arttaca Contracts (last updated v1.0.0) (collections/common/IArttacaERC1155Upgradeable.sol)
+// Arttaca Contracts (last updated v1.0.0) (collections/erc1155/IArttacaERC1155Upgradeable.sol)
 
 pragma solidity ^0.8.4;
 

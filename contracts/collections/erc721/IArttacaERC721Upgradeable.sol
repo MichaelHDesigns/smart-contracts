@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Arttaca Contracts (last updated v1.0.0) (collections/common/IArttacaERC721Upgradeable.sol)
+// Arttaca Contracts (last updated v1.0.0) (collections/erc721/IArttacaERC721Upgradeable.sol)
 
 pragma solidity ^0.8.4;
 
@@ -12,6 +12,15 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol"
  * Arttaca collections.
  */
 interface IArttacaERC721Upgradeable is IERC721Upgradeable {
+
+    struct MintData {
+        address signer;
+        address to;
+        uint tokenId;
+        string tokenURI;
+        uint256 expirationTimestamp;
+        bytes signature;
+    }
 
     /**
      * @dev Allows Owner to mint new assets in the collection.
@@ -36,5 +45,5 @@ interface IArttacaERC721Upgradeable is IERC721Upgradeable {
      *
      * Emits a {Transfer} event for every new asset minted.
      */
-    function mintAndTransfer(address _to, uint _tokenId, bytes calldata _mintData) external;
+    function mintAndTransfer(MintData calldata _mintData) external;
 }
