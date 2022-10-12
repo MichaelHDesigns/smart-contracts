@@ -3,16 +3,26 @@ pragma solidity ^0.8.0;
 
 abstract contract VerifySignature {
 
-    function getEthSignedMessageHash(bytes32 _messageHash) public pure returns (bytes32) {
+    function _verifySignature(
+        bytes memory _valueToHash,
+        address _signer,
+        bytes calldata _signature
+    ) internal pure returns (bool) {
+        bytes32 messageHash = keccak256(_valueToHash);
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+        return recoverSigner(ethSignedMessageHash, slice(_signature, 0, 65)) == _signer;
+    }
+
+    function getEthSignedMessageHash(bytes32 _messageHash) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
     }
 
-    function recoverSigner(bytes32 _ethSignedMessageHash, bytes memory _signature) public pure returns (address) {
+    function recoverSigner(bytes32 _ethSignedMessageHash, bytes memory _signature) internal pure returns (address) {
         (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
         return ecrecover(_ethSignedMessageHash, v, r, s);
     }
 
-    function splitSignature(bytes memory sig) public pure returns (bytes32 r, bytes32 s, uint8 v) {
+    function splitSignature(bytes memory sig) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
         require(sig.length == 65, "VerifySignature::splitSignature: Invalid signature length.");
 
         assembly {

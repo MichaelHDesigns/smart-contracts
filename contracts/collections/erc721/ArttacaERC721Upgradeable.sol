@@ -66,7 +66,17 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         require(owner() == _mintData.signer, "ArttacaERC721Upgradeable:mintAndTransfer:: Signer is not the owner.");
         require(block.timestamp <= _mintData.expirationTimestamp, "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is expired.");
         require(
-            verifyMint(address(this), _mintData),
+            _verifySignature(
+                abi.encodePacked(
+                    address(this),
+                    _mintData.to,
+                    _mintData.tokenId,
+                    _mintData.tokenURI,
+                    _mintData.expirationTimestamp
+                ),
+                _mintData.signer,
+                _mintData.signature
+            ),
             "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is not valid."
         );
         _mint(_mintData.to, _mintData.tokenId);
@@ -117,23 +127,5 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         uint256 tokenId
     ) internal virtual override(ERC721Upgradeable, ERC721PausableUpgradeable, ERC721EnumerableUpgradeable) {
         super._beforeTokenTransfer(from, to, tokenId);
-    }
-
-    function verifyMint(
-        address _contractAddress,
-        MintData calldata _mintData
-    ) public pure returns (bool) {
-        bytes32 messageHash = keccak256(
-            abi.encodePacked(
-                _contractAddress,
-                _mintData.to,
-                _mintData.tokenId,
-                _mintData.tokenURI,
-                _mintData.expirationTimestamp
-            )
-        );
-        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-
-        return recoverSigner(ethSignedMessageHash, slice(_mintData.signature, 0, 65)) == _mintData.signer;
     }
 }
