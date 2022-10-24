@@ -26,7 +26,7 @@ describe("ArttacaERC721Upgradeable pausable", function () {
 
   it("Can't transfer when paused", async function () {
 
-    let tx = await collection['mintAndTransfer(address,uint256)'](owner.address, 0);
+    let tx = await collection['mintAndTransfer(address,uint256,string)'](owner.address, 0 , '');
     await tx.wait();
 
     tx = await collection.pause()

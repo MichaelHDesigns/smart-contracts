@@ -6,22 +6,22 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
 
 import "../../utils/VerifySignature.sol";
 import "./IArttacaERC721Upgradeable.sol";
+import "./ArttacaERC721URIStorageUpgradeable.sol";
 
 /**
  * @title ArttacaERC721Upgradeable
  * @dev This contract is an Arttaca ERC721 upgradeable collection.
  */
-contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721BurnableUpgradeable, ERC721PausableUpgradeable, ERC721URIStorageUpgradeable, ERC721EnumerableUpgradeable, ERC2981Upgradeable, IArttacaERC721Upgradeable {
+contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721BurnableUpgradeable, ERC721PausableUpgradeable, ArttacaERC721URIStorageUpgradeable, ERC721EnumerableUpgradeable, ERC2981Upgradeable, IArttacaERC721Upgradeable {
 
+    string public baseURI;
     address[] public splits;
     uint[] public shares;
-    string public baseURI;
 
     function __ArttacaERC721_initialize(
         address _owner,
@@ -36,7 +36,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         __Ownable_init();
         __Pausable_init();
         __ERC721Burnable_init();
-        __ERC721URIStorage_init();
+        __ArttacaERC721URIStorage_init();
         __ERC2981_init();
         _transferOwnership(_owner);
         _setDefaultRoyalty(address(this), _royaltyPercentage);
@@ -46,20 +46,9 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         shares = _shares;
     }
 
-    function mintAndTransfer(address _to, uint _tokenId) override external onlyOwner {
+    function mintAndTransfer(address _to, uint _tokenId, string calldata _tokenURI) override external onlyOwner {
         _mint(_to, _tokenId);
-    }
-
-    function getAddress() external view returns (address) {
-        return address(this);
-    }
-
-    function _baseURI() internal view override returns (string memory) {
-        return baseURI;
-    }
-
-    function setBaseURI(string memory _baseURIParam) external onlyOwner {
-        baseURI = _baseURIParam;
+        _setTokenURI(_tokenId, _tokenURI);
     }
 
     function mintAndTransfer(MintData calldata _mintData) override external {
@@ -105,13 +94,25 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         _unpause();
     }
 
-    function _burn(uint256 tokenId) internal virtual override(ERC721Upgradeable, ERC721URIStorageUpgradeable) {
+    function _burn(uint256 tokenId) internal virtual override(ERC721Upgradeable, ArttacaERC721URIStorageUpgradeable) {
         super._burn(tokenId);
         require(!paused(), "ERC721Pausable: token transfer while paused");
     }
 
-    function tokenURI(uint256 tokenId) public view virtual override(ERC721Upgradeable, ERC721URIStorageUpgradeable) returns (string memory) {
-        return super.tokenURI(tokenId);
+    function setTokenURI(uint _tokenId, string calldata _newTokenURI) onlyOwner external {
+        _setTokenURI(_tokenId, _newTokenURI);
+    }
+
+    function _baseURI() internal view override returns (string memory) {
+        return baseURI;
+    }
+
+    function setBaseURI(string memory _baseURIParam) external onlyOwner {
+        baseURI = _baseURIParam;
+    }
+
+    function tokenURI(uint _tokenId) public view override(ERC721Upgradeable, ArttacaERC721URIStorageUpgradeable) returns (string memory) {
+        return super.tokenURI(_tokenId);
     }
 
     /**

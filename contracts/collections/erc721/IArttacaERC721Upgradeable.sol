@@ -32,7 +32,7 @@ interface IArttacaERC721Upgradeable is IERC721Upgradeable {
      *
      * Emits a {Transfer} event for every new asset minted.
      */
-    function mintAndTransfer(address _to, uint _tokenId) external;
+    function mintAndTransfer(address _to, uint _tokenId, string calldata _tokenURI) external;
 
     /**
      * @dev Allows anyone to mint assets if there's a valid owner signature.
