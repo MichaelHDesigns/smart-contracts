@@ -10,8 +10,8 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
     },
-    rinkeby: {
-      network: 4,
+    goerli: {
+      network: 5,
       url: process.env.RPC_URL,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
     }
