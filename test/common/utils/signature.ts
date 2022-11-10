@@ -5,14 +5,13 @@ import { ethers } from "hardhat";
 async function createMintSignature(
     contractAddress: string,
     signer: SignerWithAddress,
-    to: string,
     tokenId: BigNumber,
     tokenURI: string,
     expirationTimestamp: number
 ): Promise<string> {
     const hash = ethers.utils.solidityKeccak256(
-        ["address", "address", "uint256", "string", "uint256"],
-        [contractAddress, to, tokenId, tokenURI, expirationTimestamp]
+        ["address", "uint256", "string", "uint256"],
+        [contractAddress, tokenId, tokenURI, expirationTimestamp]
     );
     return await signHash(signer, hash);
 }

@@ -14,7 +14,7 @@ import "../erc1155/IArttacaERC1155Upgradeable.sol";
 contract TransferAgentUpgradeable is OperableUpgradeable {
 
     function __TransferAgent_init() external initializer {
-        __OperableUpgradeable_init();
+        __OperableUpgradeable_init(msg.sender);
     }
 
     function erc721safeTransferFrom(IArttacaERC721Upgradeable token, address from, address to, uint256 tokenId) external onlyOperator {

@@ -19,7 +19,7 @@ import "../utils/VerifySignature.sol";
 contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, OperableUpgradeable {
 
     function __ArttacaMarketplace_init() external initializer {
-        __OperableUpgradeable_init();
+        __OperableUpgradeable_init(msg.sender);
     }
 
     function buyAndMint(Marketplace.MintData calldata _mintData, Marketplace.SaleData calldata _saleData) external payable {

@@ -13,12 +13,18 @@ contract OperableUpgradeable is OwnableUpgradeable {
 
     mapping (address => bool) operators;
 
-    function __OperableUpgradeable_init() public initializer {
+    function __OperableUpgradeable_init(address _owner) public initializer {
         __Context_init_unchained();
         __Ownable_init_unchained();
+        _transferOwnership(_owner);
+        _addOperator(_owner);
     }
 
     function addOperator(address operator) external onlyOwner {
+        _addOperator(operator);
+    }
+
+    function _addOperator(address operator) internal {
         operators[operator] = true;
     }
 

@@ -3,8 +3,8 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { BigNumber } from "ethers";
 import { deployCollection } from "./util/fixtures";
-import { createMintSignature } from "../common/utils/signature";
-import { getLastBlockTimestamp } from "../common/utils/time";
+import { createMintSignature } from "../../common/utils/signature";
+import { getLastBlockTimestamp } from "../../common/utils/time";
 
 describe("ArttacaERC721Upgradeable minting", function () {
   let collection, owner, user;
@@ -34,11 +34,9 @@ describe("ArttacaERC721Upgradeable minting", function () {
 
 	  const timestamp = await getLastBlockTimestamp();
     const expTimestamp = timestamp + 100;
-	
 	  const mintSignature = await createMintSignature(
 	    collection.address,
       owner,
-      user.address,
       TOKEN_ID,
       tokenURI,
       expTimestamp
@@ -66,11 +64,11 @@ describe("ArttacaERC721Upgradeable minting", function () {
 
 	  const timestamp = await getLastBlockTimestamp();
     const expTimestamp = timestamp + 100;
+    const wrongTokenId = 5;
 	
 	  const wrongMintSignature = await createMintSignature(
 	    collection.address,
       owner,
-      owner.address,
       TOKEN_ID,
       tokenURI,
       expTimestamp
@@ -79,7 +77,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
     const mintData = [
       owner.address,
       user.address,  // changed the to value
-      TOKEN_ID,
+      wrongTokenId,
       tokenURI,
       expTimestamp,
       wrongMintSignature
@@ -99,7 +97,6 @@ describe("ArttacaERC721Upgradeable minting", function () {
 	  const expiredMintSignature = await createMintSignature(
 	    collection.address,
       owner,
-      owner.address, // to is the owner now
       TOKEN_ID,
       tokenURI,
       pastExpTimestamp // time is before timestamp
