@@ -51,14 +51,13 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         _setTokenURI(_tokenId, _tokenURI);
     }
 
-    function mintAndTransfer(MintData calldata _mintData) override external {
+    function mintAndTransfer(Marketplace.MintData calldata _mintData) override external {
         require(owner() == _mintData.signer, "ArttacaERC721Upgradeable:mintAndTransfer:: Signer is not the owner.");
         require(block.timestamp <= _mintData.expirationTimestamp, "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is expired.");
         require(
             _verifySignature(
                 abi.encodePacked(
                     address(this),
-                    _mintData.to,
                     _mintData.tokenId,
                     _mintData.tokenURI,
                     _mintData.expirationTimestamp
@@ -94,7 +93,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         _unpause();
     }
 
-    function _burn(uint256 tokenId) internal virtual override(ERC721Upgradeable, ArttacaERC721URIStorageUpgradeable) {
+    function _burn(uint tokenId) internal virtual override(ERC721Upgradeable, ArttacaERC721URIStorageUpgradeable) {
         super._burn(tokenId);
         require(!paused(), "ERC721Pausable: token transfer while paused");
     }

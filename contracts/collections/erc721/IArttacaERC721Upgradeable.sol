@@ -4,6 +4,7 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import "../../lib/Marketplace.sol";
 
 /**
  * @title Arttaca ERC721 interface, standard for Arttaca NFT collections.
@@ -12,15 +13,6 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol"
  * Arttaca collections.
  */
 interface IArttacaERC721Upgradeable is IERC721Upgradeable {
-
-    struct MintData {
-        address signer;
-        address to;
-        uint tokenId;
-        string tokenURI;
-        uint256 expirationTimestamp;
-        bytes signature;
-    }
 
     /**
      * @dev Allows Owner to mint new assets in the collection.
@@ -45,5 +37,5 @@ interface IArttacaERC721Upgradeable is IERC721Upgradeable {
      *
      * Emits a {Transfer} event for every new asset minted.
      */
-    function mintAndTransfer(MintData calldata _mintData) external;
+    function mintAndTransfer(Marketplace.MintData calldata _mintData) external;
 }
