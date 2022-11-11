@@ -19,11 +19,13 @@ import "./ArttacaERC721URIStorageUpgradeable.sol";
  */
 contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721BurnableUpgradeable, ERC721PausableUpgradeable, ArttacaERC721URIStorageUpgradeable, ERC721EnumerableUpgradeable, ERC2981Upgradeable, IArttacaERC721Upgradeable {
 
+    address public factoryAddress;
     string public baseURI;
     address[] public splits;
     uint[] public shares;
 
     function __ArttacaERC721_initialize(
+        address _factoryAddress,
         address _owner,
         string memory _name,
         string memory _symbol,
@@ -41,6 +43,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         _transferOwnership(_owner);
         _setDefaultRoyalty(address(this), _royaltyPercentage);
 
+        factoryAddress = _factoryAddress;
         baseURI = _baseURIParam;
         splits = _splits;
         shares = _shares;

@@ -21,7 +21,7 @@ async function deployCollectionFactory() {
 async function deployCollection() {
   const { factory, erc721, owner, user } = await deployCollectionFactory();
 
-  const tx = await factory.createCollection('Arttaca Test','ARTTT', 'https://api.arttaca.io/v1/assets/',[],[])
+  const tx = await factory.createCollection('Arttaca Test','ARTTT', 'https://api.arttaca.io/v1/assets/',[],[], 5)
   await tx.wait();
   const newCollectionAddress = await factory.getCollectionAddress(0);
   const collection = await ethers.getContractAt('ArttacaERC721Upgradeable', newCollectionAddress, owner)

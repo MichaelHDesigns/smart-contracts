@@ -47,19 +47,22 @@ contract ArttacaERC721FactoryUpgradeable is Initializable {
         string memory _symbol,
         string memory _baseURI,
         address[] memory _splits,
-        uint[] memory _shares
+        uint[] memory _shares,
+        uint96 _royaltyPercentage
     ) external returns (address) {
 
         BeaconProxy collection = new BeaconProxy(
             address(beacon),
             abi.encodeWithSelector(
                 ArttacaERC721Upgradeable(address(0)).__ArttacaERC721_initialize.selector,
+                address(this),
                 msg.sender,
                 _name,
                 _symbol,
                 _baseURI, 
                 _splits,
-                _shares
+                _shares,
+                _royaltyPercentage
             )
         );
         address newCollectionAddress = address(collection);
