@@ -1,9 +1,12 @@
 import { ethers } from "hardhat";
 
+const deployerAddress = "0x79703E1922F57DF68835433a45758b3538AC50DD";
+
 async function main() {
 
   const ArttacaERC721Upgradeable = await ethers.getContractFactory("ArttacaERC721Upgradeable");
   const ArttacaERC721FactoryUpgradeable = await ethers.getContractFactory("ArttacaERC721FactoryUpgradeable");
+  const ArttacaMarketplaceUpgradeable = await ethers.getContractFactory("ArttacaMarketplaceUpgradeable");
 
   const erc721 = await ArttacaERC721Upgradeable.deploy();
   
@@ -13,11 +16,17 @@ async function main() {
 
   console.log(`Arttaca ERC721 collection factory has been deployed at ${factory.address}`);
 
-  const tx = await factory.createCollection('Arttaca Test','ARTTT', 'https://api.arttaca.io/v1/assets/',[],[])
+  const marketplace = await upgrades.deployProxy(ArttacaMarketplaceUpgradeable, { initializer: '__ArttacaMarketplace_init' });
+
+  await marketplace.deployed()
+
+  let tx = await marketplace.addOperator(deployerAddress);
   await tx.wait();
-  const newCollectionAddress = await factory.getCollectionAddress(0);
+
+  tx = await factory.addOperator(marketplace.address);
+  await tx.wait();
   
-  console.log(`Arttaca ERC721 main collection has been deployed at ${newCollectionAddress}`);
+  console.log(`Arttaca ERC721 marketplace has been deployed at ${marketplace.address}`);
 
   console.log(`Deployment script executed successfully.`);
 
