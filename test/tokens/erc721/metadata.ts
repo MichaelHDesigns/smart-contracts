@@ -16,7 +16,6 @@ describe("ArttacaERC721Upgradeable metadata", function () {
     expect(await collection.baseURI()).to.not.equal(NEW_BASE_URI);
     const tx = await collection.setBaseURI(NEW_BASE_URI);
     await tx.wait();
-    console.log(await collection.tokenURI(tokenId));
     expect(await collection.tokenURI(tokenId)).to.equal(buildTokenURI(NEW_BASE_URI, collection.address, tokenId));
     expect(await collection.baseURI()).to.equal(NEW_BASE_URI);
   });
@@ -36,7 +35,4 @@ describe("ArttacaERC721Upgradeable metadata", function () {
     await tx.wait();
     expect(await collection.tokenURI(tokenId)).to.equal(NEW_TOKEN_URI);
   });
-
-
-  // todo change the contract to be able to mint sending the token URI within the tx
 });

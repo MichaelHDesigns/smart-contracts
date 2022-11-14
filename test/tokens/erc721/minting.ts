@@ -7,11 +7,11 @@ import { createMintSignature } from "../../common/utils/signature";
 import { getLastBlockTimestamp } from "../../common/utils/time";
 
 describe("ArttacaERC721Upgradeable minting", function () {
-  let collection, owner, user;
+  let collection, owner, user, factory;
   const TOKEN_ID = 3;
   const tokenURI = 'ipfs://123123';
   beforeEach(async () => {
-    ({ collection, owner, user } = await loadFixture(deployCollection));
+    ({ collection, owner, user, factory } = await loadFixture(deployCollection));
   });
 
   it("Should mint", async function () {
@@ -30,7 +30,10 @@ describe("ArttacaERC721Upgradeable minting", function () {
     ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'Ownable: caller is not the owner'");
   });
 
-  it("Not owner with correct signature should be able to mint", async function () {
+  it("Operator with correct signature should be able to mint", async function () {
+
+    let tx = await factory.addOperator(user.address);
+    await tx.wait();
 
 	  const timestamp = await getLastBlockTimestamp();
     const expTimestamp = timestamp + 100;
@@ -53,7 +56,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
       mintSignature
     ]
 
-    const tx = await collection.connect(user).mintAndTransfer(tokenData, mintData);
+    tx = await collection.connect(user).mintAndTransfer(tokenData, mintData);
     await tx.wait();
 
     expect(await collection.totalSupply()).to.equal(1);
@@ -62,7 +65,10 @@ describe("ArttacaERC721Upgradeable minting", function () {
     expect(await collection.tokenOfOwnerByIndex(user.address, 0)).to.equal(TOKEN_ID);
   });
 
-  it("Not owner with wrong signature should fail", async function () {
+  it("Operator with wrong signature should fail", async function () {
+
+    let tx = await factory.addOperator(user.address);
+    await tx.wait();
 
 	  const timestamp = await getLastBlockTimestamp();
     const expTimestamp = timestamp + 100;
@@ -93,7 +99,10 @@ describe("ArttacaERC721Upgradeable minting", function () {
   });
 
 
-  it("Not owner with expired signature should fail", async function () {
+  it("Operator with expired signature should fail", async function () {
+
+    let tx = await factory.addOperator(user.address);
+    await tx.wait();
 
 	  const timestamp = await getLastBlockTimestamp();
     const pastExpTimestamp = timestamp - 100;

@@ -62,6 +62,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         Marketplace.TokenData calldata _tokenData,
         Marketplace.MintData calldata _mintData
     ) override external {
+        require(Operatable(factoryAddress).isOperator(msg.sender), "ArttacaERC721Upgradeable:mintAndTransfer:: Caller is not a valid factory operator.");
         require(block.timestamp <= _mintData.expirationTimestamp, "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is expired.");
         require(
             _verifySignature(
@@ -121,13 +122,6 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
 
     function tokenURI(uint _tokenId) public view override(ERC721Upgradeable, ArttacaERC721URIStorageUpgradeable) returns (string memory) {
         return super.tokenURI(_tokenId);
-    }
-
-    function isApprovedForAll(
-        address _owner,
-        address _operator
-    ) public override(IERC721Upgradeable, ERC721Upgradeable) view returns (bool isOperator) {
-        return Operatable(factoryAddress).isOperator(_operator) || super.isApprovedForAll(_owner, _operator);
     }
 
     /**
