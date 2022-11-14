@@ -52,7 +52,23 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
                 collection.owner(),
                 _saleData.ownerSignature
             ),
-            "ArttacaMarketplaceUpgradeable:buyAndMint:: Signature is not valid."
+            "ArttacaMarketplaceUpgradeable:buyAndMint:: Owner signature is not valid."
+        );
+
+        bytes32 messageHash = keccak256(
+            abi.encodePacked(
+                collectionAddress,
+                _tokenData.id,
+                _saleData.price,
+                _saleData.expirationTimestamp
+            )
+        );
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+        address nodeSignerRecovered = recoverSigner(ethSignedMessageHash, slice(_saleData.nodeSignature, 0, 65));
+
+        require(
+            isOperator(nodeSignerRecovered),
+            "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is not from a valid operator."
         );
 
         AddressUpgradeable.sendValue(payable(collection.owner()), msg.value);

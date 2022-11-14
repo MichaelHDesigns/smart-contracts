@@ -31,7 +31,7 @@ contract OperableUpgradeable is OwnableUpgradeable {
         operators[operator] = false;
     }
 
-    function isOperator(address _user) external view returns (bool) {
+    function isOperator(address _user) public view returns (bool) {
         return operators[_user];
     }
 
