@@ -5,6 +5,7 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 
+import "../../access/OperableUpgradeable.sol";
 import "./ArttacaERC721Upgradeable.sol";
 import "./ArttacaERC721Beacon.sol";
 
@@ -12,7 +13,7 @@ import "./ArttacaERC721Beacon.sol";
  * @title ArttacaERC721Factory
  * @dev This contract is a factory to create ERC721 collections.
  */
-contract ArttacaERC721FactoryUpgradeable is Initializable {
+contract ArttacaERC721FactoryUpgradeable is OperableUpgradeable {
 
     mapping(uint => address) private collections;
     uint public collectionsCount;
@@ -31,10 +32,8 @@ contract ArttacaERC721FactoryUpgradeable is Initializable {
         uint[] shares
     );
 
-    function __ArttacaERC721Factory_initialize(
-        address _initBlueprint
-    ) public initializer onlyInitializing {
-
+    function __ArttacaERC721Factory_initialize(address _initBlueprint) public initializer onlyInitializing {
+        __OperableUpgradeable_init(msg.sender);
         __ArttacaERC721Factory_initialize_unchained(_initBlueprint);
     }
 

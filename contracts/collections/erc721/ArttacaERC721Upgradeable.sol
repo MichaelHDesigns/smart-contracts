@@ -13,6 +13,10 @@ import "../../utils/VerifySignature.sol";
 import "./IArttacaERC721Upgradeable.sol";
 import "./ArttacaERC721URIStorageUpgradeable.sol";
 
+interface Operatable {
+    function isOperator(address _user) external view returns (bool);
+}
+
 /**
  * @title ArttacaERC721Upgradeable
  * @dev This contract is an Arttaca ERC721 upgradeable collection.
@@ -49,29 +53,31 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         shares = _shares;
     }
 
-    function mintAndTransfer(address _to, uint _tokenId, string calldata _tokenURI) override external onlyOwner {
+    function mintAndTransferByOwner(address _to, uint _tokenId, string calldata _tokenURI) override external onlyOwner {
         _mint(_to, _tokenId);
         _setTokenURI(_tokenId, _tokenURI);
     }
 
-    function mintAndTransfer(Marketplace.MintData calldata _mintData) override external {
-        require(owner() == _mintData.signer, "ArttacaERC721Upgradeable:mintAndTransfer:: Signer is not the owner.");
+    function mintAndTransfer(
+        Marketplace.TokenData calldata _tokenData,
+        Marketplace.MintData calldata _mintData
+    ) override external {
         require(block.timestamp <= _mintData.expirationTimestamp, "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is expired.");
         require(
             _verifySignature(
                 abi.encodePacked(
                     address(this),
-                    _mintData.tokenId,
-                    _mintData.tokenURI,
+                    _tokenData.id,
+                    _tokenData.URI,
                     _mintData.expirationTimestamp
                 ),
-                _mintData.signer,
+                owner(),
                 _mintData.signature
             ),
             "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is not valid."
         );
-        _mint(_mintData.to, _mintData.tokenId);
-        _setTokenURI(_mintData.tokenId, _mintData.tokenURI);
+        _mint(_mintData.to, _tokenData.id);
+        _setTokenURI(_tokenData.id, _tokenData.URI);
     }
 
     function tokensOfOwner(address _owner) public view returns(uint[] memory ) {
@@ -115,6 +121,13 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
 
     function tokenURI(uint _tokenId) public view override(ERC721Upgradeable, ArttacaERC721URIStorageUpgradeable) returns (string memory) {
         return super.tokenURI(_tokenId);
+    }
+
+    function isApprovedForAll(
+        address _owner,
+        address _operator
+    ) public override(IERC721Upgradeable, ERC721Upgradeable) view returns (bool isOperator) {
+        return Operatable(factoryAddress).isOperator(_operator) || super.isApprovedForAll(_owner, _operator);
     }
 
     /**

@@ -17,7 +17,6 @@ contract OperableUpgradeable is OwnableUpgradeable {
         __Context_init_unchained();
         __Ownable_init_unchained();
         _transferOwnership(_owner);
-        _addOperator(_owner);
     }
 
     function addOperator(address operator) external onlyOwner {
@@ -30,6 +29,10 @@ contract OperableUpgradeable is OwnableUpgradeable {
 
     function removeOperator(address operator) external onlyOwner {
         operators[operator] = false;
+    }
+
+    function isOperator(address _user) external view returns (bool) {
+        return operators[_user];
     }
 
     modifier onlyOperator() {

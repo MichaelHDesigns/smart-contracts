@@ -37,6 +37,14 @@ async function deployMarketplace() {
 
   await marketplace.deployed()
 
+  console.log('I am owner: ', owner.address);
+  console.log('I am the marketplace owner: ', await marketplace.owner());
+  console.log('I am the factory owner: ', await factory.owner());
+
+  // add marketplace as operator for node validations
+  const tx = await factory.addOperator(marketplace.address);
+  await tx.wait();
+
   return { factory, erc721, owner, user , collection, marketplace };
 }
 

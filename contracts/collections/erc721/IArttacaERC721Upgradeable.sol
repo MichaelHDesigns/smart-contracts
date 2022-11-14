@@ -24,7 +24,7 @@ interface IArttacaERC721Upgradeable is IERC721Upgradeable {
      *
      * Emits a {Transfer} event for every new asset minted.
      */
-    function mintAndTransfer(address _to, uint _tokenId, string calldata _tokenURI) external;
+    function mintAndTransferByOwner(address _to, uint _tokenId, string calldata _tokenURI) external;
 
     /**
      * @dev Allows anyone to mint assets if there's a valid owner signature.
@@ -33,9 +33,10 @@ interface IArttacaERC721Upgradeable is IERC721Upgradeable {
      *
      * - The `msg.sender` is the owner.
      * - The value '_to' must be different than a ZERO address.
-     * - The value '_mintData' must contain valid signature and token information.
+     * - The value '_tokenData' must contain the token information.
+     * - The value '_mintData' must contain valid signature with the expiration date.
      *
      * Emits a {Transfer} event for every new asset minted.
      */
-    function mintAndTransfer(Marketplace.MintData calldata _mintData) external;
+    function mintAndTransfer(Marketplace.TokenData calldata _tokenData, Marketplace.MintData calldata _mintData) external;
 }

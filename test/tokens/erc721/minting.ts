@@ -15,7 +15,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
   });
 
   it("Should mint", async function () {
-    const tx = await collection['mintAndTransfer(address,uint256,string)'](owner.address, TOKEN_ID, tokenURI);
+    const tx = await collection.mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI);
     await tx.wait();
 
     expect(await collection.totalSupply()).to.equal(1);
@@ -26,7 +26,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
 
   it("Not owner minting without signature should fail", async function () {
     await expect(
-      collection.connect(user)['mintAndTransfer(address,uint256,string)'](owner.address, TOKEN_ID, tokenURI)
+      collection.connect(user).mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI)
     ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'Ownable: caller is not the owner'");
   });
 
@@ -42,16 +42,18 @@ describe("ArttacaERC721Upgradeable minting", function () {
       expTimestamp
     );
 
-    const mintData = [
-      owner.address,
-      user.address,
+    const tokenData = [
       TOKEN_ID,
-      tokenURI,
+      tokenURI
+    ]
+
+    const mintData = [
+      user.address,
       expTimestamp,
       mintSignature
     ]
 
-    const tx = await collection.connect(user)['mintAndTransfer((address,address,uint256,string,uint256,bytes))'](mintData);
+    const tx = await collection.connect(user).mintAndTransfer(tokenData, mintData);
     await tx.wait();
 
     expect(await collection.totalSupply()).to.equal(1);
@@ -74,17 +76,19 @@ describe("ArttacaERC721Upgradeable minting", function () {
       expTimestamp
     );
 
-    const mintData = [
-      owner.address,
-      user.address,  // changed the to value
+    const tokenData = [
       wrongTokenId,
-      tokenURI,
+      tokenURI
+    ]
+
+    const mintData = [
+      user.address,
       expTimestamp,
       wrongMintSignature
     ]
 
     await expect(
-      collection.connect(user)['mintAndTransfer((address,address,uint256,string,uint256,bytes))'](mintData)
+      collection.connect(user).mintAndTransfer(tokenData, mintData)
     ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'ArttacaERC721Upgradeable:mintAndTransfer:: Signature is not valid.'");
   });
 
@@ -102,27 +106,29 @@ describe("ArttacaERC721Upgradeable minting", function () {
       pastExpTimestamp // time is before timestamp
     );
 
-    const mintData = [
-      owner.address,
-      user.address,
+    const tokenData = [
       TOKEN_ID,
-      tokenURI,
+      tokenURI
+    ]
+
+    const mintData = [
+      user.address,
       pastExpTimestamp,
       expiredMintSignature
     ]
 
     await expect(
-      collection.connect(user)['mintAndTransfer((address,address,uint256,string,uint256,bytes))'](mintData)
+      collection.connect(user).mintAndTransfer(tokenData, mintData)
     ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'ArttacaERC721Upgradeable:mintAndTransfer:: Signature is expired.'");
   });
 
 
   it("Minting a existing ID should revert", async function () {
-    const tx = await collection['mintAndTransfer(address,uint256,string)'](owner.address, TOKEN_ID, tokenURI);
+    const tx = await collection.mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI);
     await tx.wait();
 
     await expect(
-      collection['mintAndTransfer(address,uint256,string)'](owner.address, TOKEN_ID, tokenURI)
+      collection.mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI)
     ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'ERC721: token already minted'");
   });
 });

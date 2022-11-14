@@ -8,21 +8,21 @@ pragma solidity ^0.8.4;
  */
 library Marketplace {
 
+    struct TokenData {
+        uint id;
+        string URI;
+    }
+
     struct MintData {
-        address signer;
         address to;
-        uint tokenId;
-        string tokenURI;
         uint expirationTimestamp;
         bytes signature;
     }
 
     struct SaleData {
-        address signer;
-        address collectionAddress;
-        uint tokenId;
         uint price;
         uint expirationTimestamp;
-        bytes signature;
+        bytes ownerSignature;
+        bytes nodeSignature;
     }
 }
