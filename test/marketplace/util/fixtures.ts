@@ -43,8 +43,6 @@ async function deployMarketplace() {
   tx = await factory.addOperator(marketplace.address);
   await tx.wait();
 
-  console.log('am i a valid operator?', await factory.isOperator(marketplace.address));
-
   return { factory, erc721, owner, user , collection, marketplace, operator };
 }
 

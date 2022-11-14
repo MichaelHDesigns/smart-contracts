@@ -49,7 +49,7 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, VerifySignature, ERC11
 
     function mintAndTransfer(
         address _to, 
-        uint _tokenId, 
+        uint _tokenId,
         uint _quantity, 
         bytes calldata _mintData,
         bytes calldata _data
@@ -62,7 +62,7 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, VerifySignature, ERC11
         //     verifyMint(address(this), signer, _to, _tokenId, maxSupply, _quantity, expirationTimestamp, signature),
         //     "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is not valid."
         // );
-        // todo consider maxsupply
+        // // todo consider maxsupply
         _mint(_to, _tokenId, _quantity, _data);
     }
 
@@ -91,4 +91,6 @@ contract ArttacaERC1155Upgradeable is OwnableUpgradeable, VerifySignature, ERC11
     ) internal virtual override(ERC1155Upgradeable, ERC1155SupplyUpgradeable, ERC1155PausableUpgradeable) {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
+
+    uint256[50] private __gap;
 }

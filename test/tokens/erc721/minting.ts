@@ -14,7 +14,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
     ({ collection, owner, user, factory } = await loadFixture(deployCollection));
   });
 
-  it("Should mint", async function () {
+  it("Owner should mint", async function () {
     const tx = await collection.mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI);
     await tx.wait();
 
@@ -24,7 +24,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
     expect(await collection.tokenOfOwnerByIndex(owner.address, 0)).to.equal(TOKEN_ID);
   });
 
-  it("Not owner minting without signature should fail", async function () {
+  it("Not owner minting should fail", async function () {
     await expect(
       collection.connect(user).mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI)
     ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'Ownable: caller is not the owner'");

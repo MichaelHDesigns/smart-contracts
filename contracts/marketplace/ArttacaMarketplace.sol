@@ -13,7 +13,9 @@ import "../utils/VerifySignature.sol";
 
 interface ERC721 {
     function mintAndTransfer(Marketplace.TokenData calldata _tokenData, Marketplace.MintData calldata _mintData) external;
+    function safeTransferFrom(address from, address to, uint256 tokenId) external;
     function owner() external returns (address);
+    function ownerOf(uint) external returns (address);
 }
 
 /**
@@ -78,31 +80,53 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         collection.mintAndTransfer(_tokenData, _mintData);
     }
 
-    // function buyAndTransfer(Marketplace.SaleData calldata _saleData) external payable {
-    //     require(!paused(), "ArttacaMarketplaceUpgradeable::mintAndBuy: cannot mint and buy while is paused.");
-    //     require(msg.value >= _saleData.price, "ArttacaMarketplaceUpgradeable::mintAndBuy: Value sent is insufficient.");
+    function buyAndTransfer(
+        address collectionAddress,
+        Marketplace.TokenData calldata _tokenData, 
+        Marketplace.SaleData calldata _saleData
+    ) external payable {
+        require(!paused(), "ArttacaMarketplaceUpgradeable::buyAndMint: cannot mint and buy while is paused.");
+        require(msg.value >= _saleData.price, "ArttacaMarketplaceUpgradeable::buyAndMint: Value sent is insufficient.");
 
-    //     require(block.timestamp <= _saleData.expirationTimestamp, "ArttacaMarketplaceUpgradeable:mintAndBuy:: Signature is probably expired.");
-    //     require(
-    //         _verifySignature(
-    //             abi.encodePacked(
-    //                 _saleData.collectionAddress,
-    //                 _saleData.tokenId,
-    //                 _saleData.price,
-    //                 _saleData.expirationTimestamp
-    //             ),
-    //             _saleData.signer,
-    //             _saleData.signature
-    //         ),
-    //         "ArttacaMarketplaceUpgradeable:mintAndBuy:: Signature is not valid."
-    //     );
+        require(block.timestamp <= _saleData.expirationTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Signature is probably expired.");
+        ERC721 collection = ERC721(collectionAddress);
+        address tokenOwner = collection.ownerOf(_tokenData.id);
+        require(
+            _verifySignature(
+                abi.encodePacked(
+                    collectionAddress,
+                    _tokenData.id,
+                    _saleData.price,
+                    _saleData.expirationTimestamp
+                ),
+                tokenOwner,
+                _saleData.ownerSignature
+            ),
+            "ArttacaMarketplaceUpgradeable:buyAndMint:: Owner signature is not valid."
+        );
 
-    //     AddressUpgradeable.sendValue(payable(_saleData.signer), msg.value);
-    //     // todo add protocol fee
-    //     // todo add royalties
+        bytes32 messageHash = keccak256(
+            abi.encodePacked(
+                collectionAddress,
+                _tokenData.id,
+                _saleData.price,
+                _saleData.expirationTimestamp
+            )
+        );
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+        address nodeSignerRecovered = recoverSigner(ethSignedMessageHash, slice(_saleData.nodeSignature, 0, 65));
 
-    //     IArttacaERC721Upgradeable(_saleData.collectionAddress).transferFrom(_saleData.signer, msg.sender, _saleData.tokenId);
-    // }
+        require(
+            isOperator(nodeSignerRecovered),
+            "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is not from a valid operator."
+        );
+
+        AddressUpgradeable.sendValue(payable(tokenOwner), msg.value);
+        // todo add protocol fee
+        // todo add royalties
+
+        collection.safeTransferFrom(tokenOwner, msg.sender, _tokenData.id);
+    }
 
     /**
      * @dev Change the protocol fee recipient (owner only)
@@ -122,4 +146,6 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
     function unpause() external onlyOperator {
         _unpause();
     }
+
+    uint256[50] private __gap;
 }

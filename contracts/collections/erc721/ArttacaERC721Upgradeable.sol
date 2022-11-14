@@ -138,4 +138,6 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
     ) internal virtual override(ERC721Upgradeable, ERC721PausableUpgradeable, ERC721EnumerableUpgradeable) {
         super._beforeTokenTransfer(from, to, tokenId);
     }
+
+    uint256[50] private __gap;
 }

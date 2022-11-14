@@ -39,4 +39,6 @@ contract OperableUpgradeable is OwnableUpgradeable {
         require(operators[_msgSender()], "OperableUpgradeable::onlyOperator: the caller is not an operator.");
         _;
     }
+
+    uint256[50] private __gap;
 }
