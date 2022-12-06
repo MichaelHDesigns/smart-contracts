@@ -33,6 +33,23 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         _addOperator(msg.sender);
     }
 
+    function getHash() external returns (bytes32) {
+        return Ownership.SPLIT_HASH;
+    }
+
+    function getHashes(Ownership.Split[] memory splits) external returns (bytes32, Ownership.Split memory, bytes32[] memory) {
+        bytes32[] memory splitBytes = new bytes32[](splits.length);
+
+        for (uint i = 0; i < splits.length; ++i) {
+            splitBytes[i] = Ownership.hash(splits[i]);
+        }
+        return (
+            Ownership.SPLIT_HASH,
+            splits[0],
+            splitBytes
+        );
+    }
+
     function buyAndMint(
         address collectionAddress, 
         Marketplace.TokenData calldata _tokenData, 
@@ -47,26 +64,14 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         ERC721 collection = ERC721(collectionAddress);
         require(
             _verifySignature(
-                abi.encodePacked(
-                    collectionAddress,
-                    _tokenData.id,
-                    _saleData.price,
-                    _saleData.listingExpTimestamp
-                ),
+                Marketplace.hashListing(collectionAddress, _tokenData, _saleData, false),
                 collection.owner(),
                 _saleData.listingSignature
             ),
             "ArttacaMarketplaceUpgradeable:buyAndMint:: Listing signature is not valid."
         );
 
-        bytes32 messageHash = keccak256(
-            abi.encodePacked(
-                collectionAddress,
-                _tokenData.id,
-                _saleData.price,
-                _saleData.nodeExpTimestamp
-            )
-        );
+        bytes32 messageHash = keccak256(Marketplace.hashListing(collectionAddress, _tokenData, _saleData, true));
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
         address nodeSignerRecovered = recoverSigner(ethSignedMessageHash, slice(_saleData.nodeSignature, 0, 65));
 

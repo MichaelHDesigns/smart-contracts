@@ -58,12 +58,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         require(block.timestamp <= _mintData.expTimestamp, "ArttacaERC721Upgradeable:mintAndTransfer:: Signature is expired.");
         require(
             _verifySignature(
-                abi.encodePacked(
-                    address(this),
-                    _tokenData.id,
-                    _tokenData.URI,
-                    _mintData.expTimestamp
-                ),
+                Marketplace.hashMint(address(this), _tokenData, _mintData),
                 owner(),
                 _mintData.signature
             ),

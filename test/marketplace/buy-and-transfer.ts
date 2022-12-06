@@ -13,7 +13,7 @@ const tokenData = [
   tokenURI
 ]
 
-describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
+describe.skip("ArttacaMarketplaceUpgradeable buy and transfer", function () {
   let factory, erc721, owner, user, collection, marketplace, operator;
   beforeEach(async () => {
       ({ factory, erc721, owner, user , collection, marketplace, operator } = await loadFixture(deployMarketplace));
