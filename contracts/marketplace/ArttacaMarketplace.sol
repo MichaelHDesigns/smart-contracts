@@ -28,26 +28,13 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
     /* Recipient of protocol fees. */
     address public protocolFeeRecipient;
 
-    function __ArttacaMarketplace_init() external initializer {
-        __OperableUpgradeable_init(msg.sender);
-        _addOperator(msg.sender);
+    function __ArttacaMarketplace_init(address owner) external initializer {
+        __OperableUpgradeable_init(owner);
+        _addOperator(owner);
     }
 
     function getHash() external returns (bytes32) {
-        return Ownership.SPLIT_HASH;
-    }
-
-    function getHashes(Ownership.Split[] memory splits) external returns (bytes32, Ownership.Split memory, bytes32[] memory) {
-        bytes32[] memory splitBytes = new bytes32[](splits.length);
-
-        for (uint i = 0; i < splits.length; ++i) {
-            splitBytes[i] = Ownership.hash(splits[i]);
-        }
-        return (
-            Ownership.SPLIT_HASH,
-            splits[0],
-            splitBytes
-        );
+        return Marketplace.MINT_AND_TRANSFER_TYPEHASH;
     }
 
     function buyAndMint(

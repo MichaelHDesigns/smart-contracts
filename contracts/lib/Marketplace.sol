@@ -29,7 +29,7 @@ library Marketplace {
         bytes nodeSignature;
     }
 
-    bytes32 public constant MINT_AND_TRANSFER_TYPEHASH = keccak256("Mint721(uint id,string tokenURI, Split[] splits) Split(address account, uint96 shares)");
+    bytes32 public constant MINT_AND_TRANSFER_TYPEHASH = keccak256("Mint721(address collectionAddress, uint id,string tokenURI, Split[] splits) Split(address account, uint96 shares)");
 
     function hashMint(address collectionAddress, TokenData memory _tokenData, MintData memory _mintData) internal pure returns (bytes memory) {
         bytes32[] memory splitBytes = new bytes32[](_tokenData.splits.length);

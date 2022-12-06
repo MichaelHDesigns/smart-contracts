@@ -42,8 +42,8 @@ describe("ArttacaERC721Upgradeable minting", function () {
       owner,
       TOKEN_ID,
       tokenURI,
-      expTimestamp,
-      [[owner.address, 5000]]
+      [[owner.address, 5000]],
+      expTimestamp
     );
 
     const tokenData = [
@@ -81,8 +81,8 @@ describe("ArttacaERC721Upgradeable minting", function () {
       owner,
       TOKEN_ID,
       tokenURI,
-      expTimestamp,
-      []
+      [],
+      expTimestamp
     );
 
     const tokenData = [
@@ -116,8 +116,8 @@ describe("ArttacaERC721Upgradeable minting", function () {
       owner,
       TOKEN_ID,
       tokenURI,
-      pastExpTimestamp, // time is before timestamp
-      []
+      [],
+      pastExpTimestamp // time is before timestamp
     );
 
     const tokenData = [

@@ -3,7 +3,7 @@ import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
 
 const SPLIT_HASH = "0xb64bc59e7eded47b351c02a7b4cb52e4089e1395e8496c8256c7209069520dbf"
-const MINT_AND_TRANSFER_TYPEHASH = "0x58feed951fddab635bb89928bb51b1cb73ecca5c4497956c1fd113ba2f06374c"
+const MINT_AND_TRANSFER_TYPEHASH = "0x417af8e1467332c053123bb2ac0be5132e0f291ad7aa1db8bc2c48b757bd0774"
 
 function hashSplits(splits: any[]): string {
     const splitBytes = [];
@@ -23,8 +23,8 @@ async function createMintSignature(
     signer: SignerWithAddress,
     tokenId: BigNumber,
     tokenURI: string,
-    expTimestamp: number,
-    splits: any[]
+    splits: any[],
+    expTimestamp: number
 ): Promise<string> {
     const hash = ethers.utils.solidityKeccak256(
         ["bytes32", "address", "uint256", "string", "bytes32", "uint256"],
