@@ -1,6 +1,5 @@
 import { ethers } from "hardhat";
 
-const deployerAddress = "0x79703E1922F57DF68835433a45758b3538AC50DD";
 
 async function main() {
 
@@ -20,13 +19,13 @@ async function main() {
 
   await marketplace.deployed()
 
-  let tx = await marketplace.addOperator(deployerAddress);
+  let tx = await marketplace.addOperator(operator.address);
   await tx.wait();
 
   tx = await factory.addOperator(marketplace.address);
   await tx.wait();
   
-  console.log(`Arttaca ERC721 marketplace has been deployed at ${marketplace.address}`);
+  console.log(`Arttaca ERC721 main collection has been deployed at ${newCollectionAddress}`);
 
   console.log(`Deployment script executed successfully.`);
 

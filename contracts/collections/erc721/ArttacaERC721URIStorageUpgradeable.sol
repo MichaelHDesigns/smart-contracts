@@ -3,23 +3,22 @@
 
 pragma solidity ^0.8.4;
 
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-
 /**
- * @dev ERC721 token with storage based token URI management.
+ * @dev Collection with storage based token URI management.
  */
-abstract contract ArttacaERC721URIStorageUpgradeable is Initializable, ERC721Upgradeable {
-    using StringsUpgradeable for uint;
-    using StringsUpgradeable for address;
+abstract contract ArttacaERC721URIStorageUpgradeable is Initializable, ERC721Upgradeable, OwnableUpgradeable {
 
-    // Optional mapping for token URIs
-    mapping(uint256 => string) private _tokenURIs;
+    string public baseURI;
 
-    function __ArttacaERC721URIStorage_init() internal onlyInitializing {}
+    mapping(uint => string) private _tokenURIs;
 
-    function __ArttacaERC721URIStorage_init_unchained() internal onlyInitializing {}
+    function __ArttacaERC721URIStorage_init(string memory baseURI_) internal onlyInitializing {
+        baseURI = baseURI_;
+    }
 
     /**
      * Returns tokenURI if exists, if not baseURI
@@ -41,14 +40,22 @@ abstract contract ArttacaERC721URIStorageUpgradeable is Initializable, ERC721Upg
             return string(
                 abi.encodePacked(
                     base,
-                    address(this).toHexString(),
+                    StringsUpgradeable.toHexString(address(this)),
                     '/',
-                    tokenId.toString()
+                    StringsUpgradeable.toString(tokenId)
                 )
             );
         }
 
         return super.tokenURI(tokenId);
+    }
+
+    function setTokenURI(uint _tokenId, string calldata _newTokenURI) onlyOwner external {
+        _setTokenURI(_tokenId, _newTokenURI);
+    }
+
+    function setBaseURI(string memory baseURI_) external onlyOwner {
+        baseURI = baseURI_;
     }
 
     /**

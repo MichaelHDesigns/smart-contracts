@@ -20,6 +20,7 @@ interface ERC721 {
 
 /**
  * @title ArttacaMarketplaceUpgradeable
+
  * @dev This contract 
  */
 contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, OperableUpgradeable {
@@ -41,7 +42,8 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         require(!paused(), "ArttacaMarketplaceUpgradeable::buyAndMint: cannot mint and buy while is paused.");
         require(msg.value >= _saleData.price, "ArttacaMarketplaceUpgradeable::buyAndMint: Value sent is insufficient.");
 
-        require(block.timestamp <= _saleData.expirationTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Signature is probably expired.");
+        require(block.timestamp <= _saleData.listingExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Listing signature is probably expired.");
+        require(block.timestamp <= _saleData.nodeExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is probably expired.");
         ERC721 collection = ERC721(collectionAddress);
         require(
             _verifySignature(
@@ -49,12 +51,12 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
                     collectionAddress,
                     _tokenData.id,
                     _saleData.price,
-                    _saleData.expirationTimestamp
+                    _saleData.listingExpTimestamp
                 ),
                 collection.owner(),
-                _saleData.ownerSignature
+                _saleData.listingSignature
             ),
-            "ArttacaMarketplaceUpgradeable:buyAndMint:: Owner signature is not valid."
+            "ArttacaMarketplaceUpgradeable:buyAndMint:: Listing signature is not valid."
         );
 
         bytes32 messageHash = keccak256(
@@ -62,7 +64,7 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
                 collectionAddress,
                 _tokenData.id,
                 _saleData.price,
-                _saleData.expirationTimestamp
+                _saleData.nodeExpTimestamp
             )
         );
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
@@ -82,13 +84,15 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
 
     function buyAndTransfer(
         address collectionAddress,
-        Marketplace.TokenData calldata _tokenData, 
+        Marketplace.TokenData calldata _tokenData,
         Marketplace.SaleData calldata _saleData
     ) external payable {
         require(!paused(), "ArttacaMarketplaceUpgradeable::buyAndMint: cannot mint and buy while is paused.");
         require(msg.value >= _saleData.price, "ArttacaMarketplaceUpgradeable::buyAndMint: Value sent is insufficient.");
 
-        require(block.timestamp <= _saleData.expirationTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Signature is probably expired.");
+        require(block.timestamp <= _saleData.listingExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Listing signature is probably expired.");
+        require(block.timestamp <= _saleData.nodeExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is probably expired.");
+
         ERC721 collection = ERC721(collectionAddress);
         address tokenOwner = collection.ownerOf(_tokenData.id);
         require(
@@ -97,10 +101,10 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
                     collectionAddress,
                     _tokenData.id,
                     _saleData.price,
-                    _saleData.expirationTimestamp
+                    _saleData.listingExpTimestamp
                 ),
                 tokenOwner,
-                _saleData.ownerSignature
+                _saleData.listingSignature
             ),
             "ArttacaMarketplaceUpgradeable:buyAndMint:: Owner signature is not valid."
         );
@@ -110,7 +114,7 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
                 collectionAddress,
                 _tokenData.id,
                 _saleData.price,
-                _saleData.expirationTimestamp
+                _saleData.nodeExpTimestamp
             )
         );
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
@@ -132,10 +136,7 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
      * @dev Change the protocol fee recipient (owner only)
      * @param newProtocolFeeRecipient New protocol fee recipient address
      */
-    function changeProtocolFeeRecipient(address newProtocolFeeRecipient)
-        public
-        onlyOwner
-    {
+    function changeProtocolFeeRecipient(address newProtocolFeeRecipient) public onlyOwner{
         protocolFeeRecipient = newProtocolFeeRecipient;
     }
 

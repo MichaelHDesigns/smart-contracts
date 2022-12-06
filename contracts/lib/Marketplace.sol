@@ -7,7 +7,6 @@ pragma solidity ^0.8.4;
  * @title Arttaca Marketplace library.
  */
 library Marketplace {
-
     struct TokenData {
         uint id;
         string URI;
@@ -15,14 +14,15 @@ library Marketplace {
 
     struct MintData {
         address to;
-        uint expirationTimestamp;
+        uint expTimestamp;
         bytes signature;
     }
 
     struct SaleData {
         uint price;
-        uint expirationTimestamp;
-        bytes ownerSignature;
+        uint listingExpTimestamp;
+        uint nodeExpTimestamp;
+        bytes listingSignature;
         bytes nodeSignature;
     }
 }
