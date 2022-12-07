@@ -24,7 +24,7 @@ interface IArttacaERC721Upgradeable is IERC721Upgradeable {
      *
      * Emits a {Transfer} event for every new asset minted.
      */
-    function mintAndTransferByOwner(address _to, uint _tokenId, string calldata _tokenURI, Ownership.Split[] memory _splits) external;
+    function mintAndTransferByOwner(address _to, uint _tokenId, string calldata _tokenURI, Ownership.Royalties memory _royalties) external;
 
     /**
      * @dev Allows anyone to mint assets if there's a valid owner signature.

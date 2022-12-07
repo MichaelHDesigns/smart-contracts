@@ -5,21 +5,24 @@ import { getLastBlockTimestamp } from "../common/utils/time";
 import { createMintSignature, createSaleSignature } from "../common/utils/signature";
 
 const TOKEN_ID = 3;
+const royaltiesFee = 1000;
+const splitShares = 5000;
 const tokenURI = 'ipfs://123123';
-const PRICE = '1000000000000000000'; // 1 ETH
-let listingSignature, nodeSignature, saleData, timestamp, listingExpTimestamp, nodeExpTimestamp, expTimestamp, tokenData, splits;
+const PRICE = '100000000000000000'; // 0.1 ETH
+let listingSignature, nodeSignature, saleData, timestamp, listingExpTimestamp, nodeExpTimestamp, expTimestamp, tokenData, splits, royalties;
 
 describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
   let factory, erc721, owner, user, collection, marketplace, operator;
   beforeEach(async () => {
       ({ factory, erc721, owner, user , collection, marketplace, operator } = await loadFixture(deployMarketplace));
-      splits = [[owner.address, 5000]];
+      splits = [[owner.address, splitShares]];
+      royalties = [splits, royaltiesFee]
       tokenData = [
         TOKEN_ID,
         tokenURI,
-        splits
+        royalties
       ]
-      const tx = await collection.mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI, splits);
+      const tx = await collection.mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI, royalties);
       await tx.wait();
       timestamp = await getLastBlockTimestamp();
       expTimestamp = timestamp + 100;
@@ -76,7 +79,7 @@ describe("ArttacaMarketplaceUpgradeable buy and transfer", function () {
 
   it("User cannot buy and transfer if sent less ETH than price", async function () {
 
-    const WRONG_PRICE = '500000000000000000';
+    const WRONG_PRICE = '50000000000000000';
 
     await expect(
       marketplace.connect(user).buyAndTransfer(

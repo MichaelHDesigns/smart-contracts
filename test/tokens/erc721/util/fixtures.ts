@@ -33,8 +33,9 @@ async function deployCollectionMinted() {
   const { factory, erc721, owner, user, collection } = await deployCollection();
 
   const tokenId = 250;
-
-  const tx = await collection.mintAndTransferByOwner(owner.address, tokenId, '', [[owner.address, 5000]]);
+  const splits = [[owner.address, 5000]];
+  const royalties = [splits, 300]
+  const tx = await collection.mintAndTransferByOwner(owner.address, tokenId, '', royalties);
   await tx.wait();
 
   return { factory, erc721, owner, user , collection, tokenId };

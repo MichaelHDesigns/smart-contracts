@@ -14,6 +14,11 @@ library Ownership {
         uint96 shares;
     }
 
+    struct Royalties {
+        Split[] splits;
+        uint96 percentage;
+    }
+
     function hash(Split memory split) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(SPLIT_HASH, split.account, split.shares));
     }

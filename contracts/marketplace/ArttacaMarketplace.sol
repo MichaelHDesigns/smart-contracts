@@ -17,7 +17,7 @@ interface ERC721 {
     function owner() external returns (address);
     function ownerOf(uint) external returns (address);
     function getBaseRoyalty() external returns (Ownership.Split memory);
-    function getSplits(uint tokenId) external returns (Ownership.Split[] memory);
+    function getRoyalties(uint tokenId) external returns (Ownership.Royalties memory);
 }
 
 /**
@@ -76,11 +76,11 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         saleProceedingsToSend -= protocolFeeAmount;
 
         uint amountToSplit = saleProceedingsToSend;
-        Ownership.Split[] memory splits = collection.getSplits(_tokenData.id);
-        if (splits.length > 0) {
-            for (uint i; i < splits.length; i++) {
-                uint splitAmount = (amountToSplit * splits[i].shares) / _feeDenominator();
-                AddressUpgradeable.sendValue(splits[i].account, splitAmount);
+        Ownership.Royalties memory royalties = collection.getRoyalties(_tokenData.id);
+        if (royalties.splits.length > 0) {
+            for (uint i; i < royalties.splits.length; i++) {
+                uint splitAmount = (amountToSplit * royalties.splits[i].shares) / _feeDenominator();
+                AddressUpgradeable.sendValue(royalties.splits[i].account, splitAmount);
                 saleProceedingsToSend -= splitAmount;
             }
         } else {
@@ -138,17 +138,17 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         AddressUpgradeable.sendValue(protocolFee.account, protocolFeeAmount);
         saleProceedingsToSend -= protocolFeeAmount;
 
-        Ownership.Split memory baseRoyalty = collection.getBaseRoyalty();
-        uint royaltyAmount = (_saleData.price * baseRoyalty.shares) / _feeDenominator();
-
-        Ownership.Split[] memory splits = collection.getSplits(_tokenData.id);
-        if (splits.length > 0) {
-            for (uint i; i < splits.length; i++) {
-                uint splitAmount = (royaltyAmount * splits[i].shares) / _feeDenominator();
-                AddressUpgradeable.sendValue(splits[i].account, splitAmount);
+        Ownership.Royalties memory royalties = collection.getRoyalties(_tokenData.id);
+        if (royalties.splits.length > 0) {
+            uint royaltyAmount = (_saleData.price * royalties.percentage) / _feeDenominator();
+            for (uint i; i < royalties.splits.length; i++) {
+                uint splitAmount = (royaltyAmount * royalties.splits[i].shares) / _feeDenominator();
+                AddressUpgradeable.sendValue(royalties.splits[i].account, splitAmount);
                 saleProceedingsToSend -= splitAmount;
             }
         } else {
+            Ownership.Split memory baseRoyalty = collection.getBaseRoyalty();
+            uint royaltyAmount = (_saleData.price * baseRoyalty.shares) / _feeDenominator();
             AddressUpgradeable.sendValue(baseRoyalty.account, royaltyAmount);
             saleProceedingsToSend -= royaltyAmount;
         }

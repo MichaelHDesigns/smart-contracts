@@ -45,10 +45,10 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         factoryAddress = _factoryAddress;
     }
 
-    function mintAndTransferByOwner(address _to, uint _tokenId, string calldata _tokenURI, Ownership.Split[] memory _splits) override external onlyOwner {
+    function mintAndTransferByOwner(address _to, uint _tokenId, string calldata _tokenURI, Ownership.Royalties memory _royalties) override external onlyOwner {
         _mint(_to, _tokenId);
         _setTokenURI(_tokenId, _tokenURI);
-        _setSplits(_tokenId, _splits);
+        _setRoyalties(_tokenId, _royalties);
     }
 
     function mintAndTransfer(
@@ -67,7 +67,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         );
         _mint(_mintData.to, _tokenData.id);
         _setTokenURI(_tokenData.id, _tokenData.URI);
-        _setSplits(_tokenData.id, _tokenData.splits);
+        _setRoyalties(_tokenData.id, _tokenData.royalties);
     }
 
     function tokensOfOwner(address _owner) public view returns(uint[] memory ) {

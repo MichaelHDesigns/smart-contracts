@@ -23,12 +23,12 @@ async function createMintSignature(
     signer: SignerWithAddress,
     tokenId: BigNumber,
     tokenURI: string,
-    splits: any[],
+    royalties: any,
     expTimestamp: number
 ): Promise<string> {
     const hash = ethers.utils.solidityKeccak256(
-        ["bytes32", "address", "uint", "string", "bytes32", "uint"],
-        [MINT_AND_TRANSFER_TYPEHASH, contractAddress, tokenId, tokenURI, hashSplits(splits), expTimestamp]
+        ["bytes32", "address", "uint", "string", "bytes32", "uint96", "uint"],
+        [MINT_AND_TRANSFER_TYPEHASH, contractAddress, tokenId, tokenURI, hashSplits(royalties[0]), royalties[1], expTimestamp]
     );
     return await signHash(signer, hash);
 }

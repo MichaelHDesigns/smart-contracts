@@ -16,9 +16,9 @@ import "../lib/Ownership.sol";
  * @dev Basic splits definition for Arttaca collections.
  */
 abstract contract AbstractSplitsUpgradeable is IERC2981Upgradeable, ERC721Upgradeable, OwnableUpgradeable {
-
+    
     uint96 internal feeNumerator;
-    mapping(uint => Ownership.Split[]) internal tokenSplits;
+    mapping(uint => Ownership.Royalties) internal tokenRoyalties;
 
     function __Splits_init(uint96 _royaltyPct) internal onlyInitializing {
         __Splits_init_unchained(_royaltyPct);
@@ -35,16 +35,18 @@ abstract contract AbstractSplitsUpgradeable is IERC2981Upgradeable, ERC721Upgrad
         return (owner(), royaltyAmount);
     }
 
-    function getSplits(uint _tokenId) public view returns (Ownership.Split[] memory) {
-        return tokenSplits[_tokenId];
+    function getRoyalties(uint _tokenId) public view returns (Ownership.Royalties memory) {
+        return tokenRoyalties[_tokenId];
     }
 
-    function _setSplits(uint _tokenId, Ownership.Split[] memory _splits) internal {
-        require(_checkSplits(_splits), "AbstractSplits::_setSplits: Total shares should less or equal than 10000.");
-        if (tokenSplits[_tokenId].length > 0) delete tokenSplits[_tokenId];
-        for (uint i; i < _splits.length; i++) {
-            tokenSplits[_tokenId].push(_splits[i]);
+    function _setRoyalties(uint _tokenId, Ownership.Royalties memory _royalties) internal {
+        require(_checkSplits(_royalties.splits), "AbstractSplits::_setSplits: Total shares should less or equal than 10000.");
+
+        if (tokenRoyalties[_tokenId].splits.length > 0) delete tokenRoyalties[_tokenId];
+        for (uint i; i < _royalties.splits.length; i++) {
+            tokenRoyalties[_tokenId].splits.push(_royalties.splits[i]);
         }
+        tokenRoyalties[_tokenId].percentage = _royalties.percentage;
     }
 
     function _checkSplits(Ownership.Split[] memory _splits) internal pure returns (bool) {
