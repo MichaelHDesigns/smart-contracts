@@ -4,7 +4,7 @@ import { BigNumber } from "ethers";
 import { ethers, upgrades } from "hardhat";
 
 async function deployCollectionFactory() {
-  const [owner, user, operator] = await ethers.getSigners();
+  const [owner, user, operator, protocol] = await ethers.getSigners();
 
   const ArttacaERC721Upgradeable = await ethers.getContractFactory("ArttacaERC721Upgradeable");
   const ArttacaERC721FactoryUpgradeable = await ethers.getContractFactory("ArttacaERC721FactoryUpgradeable");
@@ -15,25 +15,25 @@ async function deployCollectionFactory() {
 
   await factory.deployed()
 
-  return { factory, erc721, owner, user, operator };
+  return { factory, erc721, owner, user, operator, protocol };
 }
 
 async function deployCollection() {
-  const { factory, erc721, owner, user, operator } = await deployCollectionFactory();
+  const { factory, erc721, owner, user, operator, protocol } = await deployCollectionFactory();
 
   const tx = await factory.createCollection('Arttaca Test','ARTTT', 'https://api.arttaca.io/v1/assets/',[],[], 5)
   await tx.wait();
   const newCollectionAddress = await factory.getCollectionAddress(0);
   const collection = await ethers.getContractAt('ArttacaERC721Upgradeable', newCollectionAddress, owner)
 
-  return { factory, erc721, owner, user , collection, operator };
+  return { factory, erc721, owner, user , collection, operator, protocol };
 }
 
 async function deployMarketplace() {
-  const { factory, erc721, owner, user, collection, operator } = await deployCollection();
+  const { factory, erc721, owner, user, collection, operator, protocol } = await deployCollection();
 
   const ArttacaMarketplaceUpgradeable = await ethers.getContractFactory("ArttacaMarketplaceUpgradeable");
-  const marketplace = await upgrades.deployProxy(ArttacaMarketplaceUpgradeable, [owner.address, [owner.address, 300]], { initializer: '__ArttacaMarketplace_init' });
+  const marketplace = await upgrades.deployProxy(ArttacaMarketplaceUpgradeable, [owner.address, [protocol.address, 300]], { initializer: '__ArttacaMarketplace_init' });
 
   await marketplace.deployed()
 
@@ -43,7 +43,7 @@ async function deployMarketplace() {
   tx = await factory.addOperator(marketplace.address);
   await tx.wait();
 
-  return { factory, erc721, owner, user , collection, marketplace, operator };
+  return { factory, erc721, owner, user , collection, marketplace, operator, protocol };
 }
 
 

@@ -27,7 +27,7 @@ async function createMintSignature(
     expTimestamp: number
 ): Promise<string> {
     const hash = ethers.utils.solidityKeccak256(
-        ["bytes32", "address", "uint256", "string", "bytes32", "uint256"],
+        ["bytes32", "address", "uint", "string", "bytes32", "uint"],
         [MINT_AND_TRANSFER_TYPEHASH, contractAddress, tokenId, tokenURI, hashSplits(splits), expTimestamp]
     );
     return await signHash(signer, hash);
@@ -41,7 +41,7 @@ async function createSaleSignature(
     expirationTimestamp: number
 ): Promise<string> {
     const hash = ethers.utils.solidityKeccak256(
-        ["address", "uint256", "uint256", "uint256"],
+        ["address", "uint", "uint", "uint"],
         [contractAddress, tokenId, price, expirationTimestamp]
     );
     return await signHash(signer, hash);

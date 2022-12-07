@@ -40,10 +40,6 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         protocolFee = _protocolFee;
     }
 
-    function getHash() external returns (bytes32) {
-        return Marketplace.MINT_AND_TRANSFER_TYPEHASH;
-    }
-
     function buyAndMint(
         address collectionAddress, 
         Marketplace.TokenData calldata _tokenData, 

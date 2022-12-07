@@ -24,7 +24,6 @@ abstract contract ArttacaERC721URIStorageUpgradeable is Initializable, ERC721Upg
      * Returns tokenURI if exists, if not baseURI
      */
     function tokenURI(uint tokenId) public view virtual override returns (string memory) {
-        _requireMinted(tokenId);
 
         string memory _tokenURI = _tokenURIs[tokenId];
 

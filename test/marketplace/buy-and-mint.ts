@@ -4,16 +4,19 @@ import { deployMarketplace } from "./util/fixtures";
 import { getLastBlockTimestamp } from "../common/utils/time";
 import { createMintSignature, createSaleSignature } from "../common/utils/signature";
 
+const feeDenominator = 10000;
+const protocolFee = 300;
+const splitFee = 5000;
 const TOKEN_ID = 3;
 const tokenURI = 'ipfs://123123';
 const PRICE = '1000000000000000000'; // 1 ETH
 let mintSignature, listingSignature, nodeSignature, mintData, saleData, timestamp, expTimestamp, listingExpTimestamp, nodeExpTimestamp, tokenData, splits;
 
 describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
-  let factory, erc721, owner, user , collection, marketplace, operator;
+  let factory, erc721, owner, user , collection, marketplace, operator, protocol;
   beforeEach(async () => {
-      ({ factory, erc721, owner, user , collection, marketplace, operator } = await loadFixture(deployMarketplace));
-      splits = [[owner.address, 5000]];
+      ({ factory, erc721, owner, user , collection, marketplace, operator, protocol } = await loadFixture(deployMarketplace));
+      splits = [[owner.address, splitFee]];
       tokenData = [
         TOKEN_ID,
         tokenURI,
@@ -52,6 +55,12 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
 
   it("User can buy and mint", async function () {
 
+    const userBalanceBefore = await user.getBalance();
+    const protocolBalanceBefore = await protocol.getBalance();
+
+    console.log('userBalanceBefore', userBalanceBefore);
+    console.log('protocolBalanceBefore', protocolBalanceBefore);
+
     const tx = await marketplace.connect(user).buyAndMint(
       collection.address,
       tokenData, 
@@ -60,6 +69,14 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
       {value: PRICE}
     );
     await tx.wait();
+
+
+    const userBalanceAfter = await user.getBalance();
+
+    const protocolBalanceAfter = await protocol.getBalance();
+
+    console.log('userBalanceAfter', userBalanceAfter);
+    console.log('protocolBalanceAfter', protocolBalanceAfter);
 
     expect(await collection.totalSupply()).to.equal(1);
     expect((await collection.tokensOfOwner(user.address)).length).to.equal(1);
