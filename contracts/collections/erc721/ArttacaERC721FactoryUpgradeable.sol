@@ -28,8 +28,7 @@ contract ArttacaERC721FactoryUpgradeable is OperableUpgradeable {
         string name,
         string indexed symbol,
         string baseURI,
-        address[] splits,
-        uint[] shares
+        uint96 _royaltyPercentage
     );
 
     function __ArttacaERC721Factory_initialize(address _initBlueprint) public initializer onlyInitializing {
@@ -45,8 +44,6 @@ contract ArttacaERC721FactoryUpgradeable is OperableUpgradeable {
         string memory _name,
         string memory _symbol,
         string memory _baseURI,
-        address[] memory _splits,
-        uint[] memory _shares,
         uint96 _royaltyPercentage
     ) external returns (address) {
 
@@ -59,8 +56,6 @@ contract ArttacaERC721FactoryUpgradeable is OperableUpgradeable {
                 _name,
                 _symbol,
                 _baseURI, 
-                _splits,
-                _shares,
                 _royaltyPercentage
             )
         );
@@ -74,8 +69,7 @@ contract ArttacaERC721FactoryUpgradeable is OperableUpgradeable {
             _name,
             _symbol,
             _baseURI,
-            _splits,
-            _shares
+            _royaltyPercentage
         );
 
         return newCollectionAddress;

@@ -58,9 +58,6 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
     const userBalanceBefore = await user.getBalance();
     const protocolBalanceBefore = await protocol.getBalance();
 
-    console.log('userBalanceBefore', userBalanceBefore);
-    console.log('protocolBalanceBefore', protocolBalanceBefore);
-
     const tx = await marketplace.connect(user).buyAndMint(
       collection.address,
       tokenData, 
@@ -70,13 +67,9 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
     );
     await tx.wait();
 
-
     const userBalanceAfter = await user.getBalance();
 
     const protocolBalanceAfter = await protocol.getBalance();
-
-    console.log('userBalanceAfter', userBalanceAfter);
-    console.log('protocolBalanceAfter', protocolBalanceAfter);
 
     expect(await collection.totalSupply()).to.equal(1);
     expect((await collection.tokensOfOwner(user.address)).length).to.equal(1);
