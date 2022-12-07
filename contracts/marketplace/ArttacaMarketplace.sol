@@ -74,9 +74,22 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
             "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is not from a valid operator."
         );
 
-        AddressUpgradeable.sendValue(payable(collection.owner()), msg.value);
-        // todo add protocol fee
-        // todo add splits
+        uint saleProceedingsToSend = _saleData.price;
+        uint protocolFeeAmount = (_saleData.price * protocolFee.shares) / _feeDenominator();
+        AddressUpgradeable.sendValue(protocolFee.account, protocolFeeAmount);
+        saleProceedingsToSend -= protocolFeeAmount;
+
+        uint amountToSplit = saleProceedingsToSend;
+        Ownership.Split[] memory splits = collection.getSplits(_tokenData.id);
+        if (splits.length > 0) {
+            for (uint i; i < splits.length; i++) {
+                uint splitAmount = (amountToSplit * splits[i].shares) / _feeDenominator();
+                AddressUpgradeable.sendValue(splits[i].account, splitAmount);
+                saleProceedingsToSend -= splitAmount;
+            }
+        } else {
+            AddressUpgradeable.sendValue(payable(collection.owner()), amountToSplit);
+        }
 
         collection.mintAndTransfer(_tokenData, _mintData);
     }
