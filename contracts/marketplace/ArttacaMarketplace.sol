@@ -16,6 +16,8 @@ interface ERC721 {
     function safeTransferFrom(address from, address to, uint256 tokenId) external;
     function owner() external returns (address);
     function ownerOf(uint) external returns (address);
+    function getBaseRoyalty() external returns (Ownership.Split memory);
+    function getSplits(uint tokenId) external returns (Ownership.Split[] memory);
 }
 
 /**
@@ -25,12 +27,17 @@ interface ERC721 {
  */
 contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, OperableUpgradeable {
 
-    /* Recipient of protocol fees. */
-    address public protocolFeeRecipient;
+    // @dev Recipient of protocol fees.
+    Ownership.Split protocolFee;
 
-    function __ArttacaMarketplace_init(address owner) external initializer {
+    function __ArttacaMarketplace_init(
+        address owner,
+        Ownership.Split memory _protocolFee
+    ) external initializer {
         __OperableUpgradeable_init(owner);
         _addOperator(owner);
+
+        protocolFee = _protocolFee;
     }
 
     function getHash() external returns (bytes32) {
@@ -117,19 +124,41 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
             "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is not from a valid operator."
         );
 
-        AddressUpgradeable.sendValue(payable(tokenOwner), msg.value);
-        // todo add protocol fee
-        // todo add royalties
+        uint saleProceedingsToSend = _saleData.price;
+        uint protocolFeeAmount = (_saleData.price * protocolFee.shares) / _feeDenominator();
+        AddressUpgradeable.sendValue(protocolFee.account, protocolFeeAmount);
+        saleProceedingsToSend -= protocolFeeAmount;
+
+        Ownership.Split memory baseRoyalty = collection.getBaseRoyalty();
+        uint royaltyAmount = (_saleData.price * baseRoyalty.shares) / _feeDenominator();
+
+        Ownership.Split[] memory splits = collection.getSplits(_tokenData.id);
+        if (splits.length > 0) {
+            for (uint i; i < splits.length; i++) {
+                uint splitAmount = (royaltyAmount * splits[i].shares) / _feeDenominator();
+                AddressUpgradeable.sendValue(splits[i].account, splitAmount);
+                saleProceedingsToSend -= splitAmount;
+            }
+        } else {
+            AddressUpgradeable.sendValue(baseRoyalty.account, royaltyAmount);
+            saleProceedingsToSend -= royaltyAmount;
+        }
+
+        AddressUpgradeable.sendValue(payable(tokenOwner), saleProceedingsToSend);
 
         collection.safeTransferFrom(tokenOwner, msg.sender, _tokenData.id);
     }
 
     /**
      * @dev Change the protocol fee recipient (owner only)
-     * @param newProtocolFeeRecipient New protocol fee recipient address
+     * @param _protocolFee New protocol fee recipient address
      */
-    function changeProtocolFeeRecipient(address newProtocolFeeRecipient) public onlyOwner{
-        protocolFeeRecipient = newProtocolFeeRecipient;
+    function changeProtocolFee(Ownership.Split memory _protocolFee) public onlyOwner {
+        protocolFee = _protocolFee;
+    }
+
+    function _feeDenominator() internal pure virtual returns (uint96) {
+        return 10000;
     }
 
     function pause() external onlyOperator {
@@ -139,6 +168,7 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
     function unpause() external onlyOperator {
         _unpause();
     }
+
 
     uint256[50] private __gap;
 }

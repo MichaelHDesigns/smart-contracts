@@ -17,7 +17,7 @@ import "../lib/Ownership.sol";
  */
 abstract contract AbstractSplitsUpgradeable is IERC2981Upgradeable, ERC721Upgradeable, OwnableUpgradeable {
 
-    uint96 internal feeNumerator = feeNumerator;
+    uint96 internal feeNumerator;
     mapping(uint => Ownership.Split[]) internal tokenSplits;
 
     function __Splits_init(uint96 _royaltyPct) internal onlyInitializing {
@@ -36,7 +36,6 @@ abstract contract AbstractSplitsUpgradeable is IERC2981Upgradeable, ERC721Upgrad
     }
 
     function getSplits(uint _tokenId) public view returns (Ownership.Split[] memory) {
-        _requireMinted(_tokenId);
         return tokenSplits[_tokenId];
     }
 
@@ -56,6 +55,10 @@ abstract contract AbstractSplitsUpgradeable is IERC2981Upgradeable, ERC721Upgrad
             totalShares += _splits[i].shares;
         }
         return totalShares <= _feeDenominator();
+    }
+
+    function getBaseRoyalty() public view returns (Ownership.Split memory) {
+        return Ownership.Split(payable(owner()), feeNumerator);
     }
 
     function _setDefaultRoyalty(uint96 _feeNumerator) internal virtual {
