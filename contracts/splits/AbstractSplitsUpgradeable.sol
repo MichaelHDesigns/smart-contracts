@@ -36,18 +36,21 @@ abstract contract AbstractSplitsUpgradeable is IERC2981Upgradeable, ERC721Upgrad
     }
 
     function getSplits(uint _tokenId) public view returns (Ownership.Split[] memory) {
+        _requireMinted(_tokenId);
         return tokenSplits[_tokenId];
     }
 
     function _setSplits(uint _tokenId, Ownership.Split[] memory _splits) internal {
-        _requireMinted(_tokenId);
-        require(_checkSplits(_splits), "AbstractSplits::_setSplits: Total shares should sum 10000.");
-        tokenSplits[_tokenId] = _splits;
+        require(_checkSplits(_splits), "AbstractSplits::_setSplits: Total shares should less or equal than 10000.");
+        if (tokenSplits[_tokenId].length > 0) delete tokenSplits[_tokenId];
+        for (uint i; i < _splits.length; i++) {
+            tokenSplits[_tokenId].push(_splits[i]);
+        }
     }
 
     function _checkSplits(Ownership.Split[] memory _splits) internal pure returns (bool) {
         uint totalShares;
-        for (uint i = 0; i < _splits.length; ++i) {
+        for (uint i = 0; i < _splits.length; i++) {
             require(_splits[i].account != address(0x0), "AbstractSplits::_setSplits: Invalid account.");
             require(_splits[i].shares > 0, "AbstractSplits::_setSplits: Shares value must be greater than 0.");
             totalShares += _splits[i].shares;

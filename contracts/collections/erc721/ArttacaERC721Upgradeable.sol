@@ -66,6 +66,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         );
         _mint(_mintData.to, _tokenData.id);
         _setTokenURI(_tokenData.id, _tokenData.URI);
+        _setSplits(_tokenData.id, _tokenData.splits);
     }
 
     function tokensOfOwner(address _owner) public view returns(uint[] memory ) {
