@@ -33,7 +33,7 @@ async function deployMarketplace() {
   const { factory, erc721, owner, user, collection, operator } = await deployCollection();
 
   const ArttacaMarketplaceUpgradeable = await ethers.getContractFactory("ArttacaMarketplaceUpgradeable");
-  const marketplace = await upgrades.deployProxy(ArttacaMarketplaceUpgradeable, [owner.address], { initializer: '__ArttacaMarketplace_init' });
+  const marketplace = await upgrades.deployProxy(ArttacaMarketplaceUpgradeable, [owner.address, [owner.address, 300]], { initializer: '__ArttacaMarketplace_init' });
 
   await marketplace.deployed()
 
