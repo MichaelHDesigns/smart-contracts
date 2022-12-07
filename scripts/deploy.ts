@@ -8,24 +8,29 @@ async function main() {
   const ArttacaMarketplaceUpgradeable = await ethers.getContractFactory("ArttacaMarketplaceUpgradeable");
 
   const erc721 = await ArttacaERC721Upgradeable.deploy();
+  await erc721.deployed()
+  console.log(`Arttaca ERC721 collection for beacon has been deployed at ${erc721.address}`);
   
   const factory = await upgrades.deployProxy(ArttacaERC721FactoryUpgradeable, [erc721.address], { initializer: '__ArttacaERC721Factory_initialize' });
 
   await factory.deployed()
-
   console.log(`Arttaca ERC721 collection factory has been deployed at ${factory.address}`);
 
-  const marketplace = await upgrades.deployProxy(ArttacaMarketplaceUpgradeable, { initializer: '__ArttacaMarketplace_init' });
+  const marketplace = await upgrades.deployProxy(ArttacaMarketplaceUpgradeable, [process.env.DEPLOYER_ADDRESS, [process.env.DEPLOYER_ADDRESS, 300]], { initializer: '__ArttacaMarketplace_init' });
 
   await marketplace.deployed()
 
-  let tx = await marketplace.addOperator(operator.address);
+  console.log(`Arttaca Marketplace has been deployed at ${marketplace.address}`);
+
+  let tx = await marketplace.addOperator(process.env.ARTTACA_OPERATOR_ADDRESS);
   await tx.wait();
+
+  console.log(`Added operator to marketplace ${process.env.ARTTACA_OPERATOR_ADDRESS}`);
 
   tx = await factory.addOperator(marketplace.address);
   await tx.wait();
   
-  console.log(`Arttaca ERC721 main collection has been deployed at ${newCollectionAddress}`);
+  console.log('added marketplace as operator in the factory');
 
   console.log(`Deployment script executed successfully.`);
 

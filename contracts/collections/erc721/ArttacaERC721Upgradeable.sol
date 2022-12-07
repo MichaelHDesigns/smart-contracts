@@ -32,14 +32,14 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         string memory _name,
         string memory _symbol,
         string memory baseURI_,
-        uint96 _royaltyPercentage
+        uint96 _royaltyPct
     ) public initializer {
         __ERC721_init(_name, _symbol);
         __Ownable_init();
         __Pausable_init();
         __ERC721Burnable_init();
         __ArttacaERC721URIStorage_init(baseURI_);
-        __Splits_init(_royaltyPercentage);
+        __Splits_init(_royaltyPct);
         _transferOwnership(_owner);
 
         factoryAddress = _factoryAddress;
@@ -98,6 +98,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
     }
 
     function tokenURI(uint _tokenId) public view override(ERC721Upgradeable, ArttacaERC721URIStorageUpgradeable) returns (string memory) {
+        require(_exists(_tokenId), "ArttacaERC721Upgradeable::tokenURI: token has not been minted.");
         return ArttacaERC721URIStorageUpgradeable.tokenURI(_tokenId);
     }
 

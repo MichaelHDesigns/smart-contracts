@@ -27,26 +27,18 @@ abstract contract ArttacaERC721URIStorageUpgradeable is Initializable, ERC721Upg
 
         string memory _tokenURI = _tokenURIs[tokenId];
 
-        // If tokenURI is set we return it.
-        if (bytes(_tokenURI).length > 0) {
+        // If there is no base URI, return the token URI.
+        if (bytes(baseURI).length == 0) {
             return _tokenURI;
         }
 
-        string memory base = _baseURI();
-
-        // If there is no token URI, return the base URI.
-        if (bytes(base).length > 0) {
-            return string(
-                abi.encodePacked(
-                    base,
-                    StringsUpgradeable.toHexString(address(this)),
-                    '/',
-                    StringsUpgradeable.toString(tokenId)
-                )
-            );
+        // If both are set, concatenate the baseURI and tokenURI (via abi.encodePacked).
+        if (bytes(_tokenURI).length > 0) {
+            return string(abi.encodePacked(baseURI, _tokenURI));
         }
 
-        return super.tokenURI(tokenId);
+        // If there is a baseURI but no tokenURI, concatenate the tokenID to the baseURI.
+        return string(abi.encodePacked(baseURI, StringsUpgradeable.toString(tokenId)));
     }
 
     function setTokenURI(uint _tokenId, string calldata _newTokenURI) onlyOwner external {
