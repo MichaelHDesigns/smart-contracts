@@ -7,15 +7,16 @@ import { createMintSignature } from "../../common/utils/signature";
 import { getLastBlockTimestamp } from "../../common/utils/time";
 
 describe("ArttacaERC721Upgradeable minting", function () {
-  let collection, owner, user, factory;
+  let collection, owner, user, factory, splits;
   const TOKEN_ID = 3;
   const tokenURI = 'ipfs://123123';
   beforeEach(async () => {
     ({ collection, owner, user, factory } = await loadFixture(deployCollection));
+    splits = [[owner.address, 5000]]
   });
 
   it("Owner should mint", async function () {
-    const tx = await collection.mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI);
+    const tx = await collection.mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI, splits);
     await tx.wait();
 
     expect(await collection.totalSupply()).to.equal(1);
@@ -26,7 +27,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
 
   it("Not owner minting should fail", async function () {
     await expect(
-      collection.connect(user).mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI)
+      collection.connect(user).mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI, splits)
     ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'Ownable: caller is not the owner'");
   });
 
@@ -139,11 +140,11 @@ describe("ArttacaERC721Upgradeable minting", function () {
 
 
   it("Minting a existing ID should revert", async function () {
-    const tx = await collection.mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI);
+    const tx = await collection.mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI, splits);
     await tx.wait();
 
     await expect(
-      collection.mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI)
+      collection.mintAndTransferByOwner(owner.address, TOKEN_ID, tokenURI, splits)
     ).to.rejectedWith("VM Exception while processing transaction: reverted with reason string 'ERC721: token already minted'");
   });
 });

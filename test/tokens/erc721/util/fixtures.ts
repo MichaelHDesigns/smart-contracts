@@ -34,7 +34,7 @@ async function deployCollectionMinted() {
 
   const tokenId = 250;
 
-  const tx = await collection.mintAndTransferByOwner(owner.address, tokenId, '');
+  const tx = await collection.mintAndTransferByOwner(owner.address, tokenId, '', [[owner.address, 5000]]);
   await tx.wait();
 
   return { factory, erc721, owner, user , collection, tokenId };

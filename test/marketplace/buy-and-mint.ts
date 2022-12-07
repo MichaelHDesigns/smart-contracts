@@ -7,16 +7,17 @@ import { createMintSignature, createSaleSignature } from "../common/utils/signat
 const TOKEN_ID = 3;
 const tokenURI = 'ipfs://123123';
 const PRICE = '1000000000000000000'; // 1 ETH
-let mintSignature, listingSignature, nodeSignature, mintData, saleData, timestamp, expTimestamp, listingExpTimestamp, nodeExpTimestamp, tokenData;
+let mintSignature, listingSignature, nodeSignature, mintData, saleData, timestamp, expTimestamp, listingExpTimestamp, nodeExpTimestamp, tokenData, splits;
 
 describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
   let factory, erc721, owner, user , collection, marketplace, operator;
   beforeEach(async () => {
       ({ factory, erc721, owner, user , collection, marketplace, operator } = await loadFixture(deployMarketplace));
+      splits = [[owner.address, 5000]];
       tokenData = [
         TOKEN_ID,
         tokenURI,
-        [[owner.address, 5000]]
+        splits
       ]
       timestamp = await getLastBlockTimestamp();
       expTimestamp = timestamp + 100;
@@ -27,7 +28,7 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
         owner,
         TOKEN_ID,
         tokenURI,
-        [[owner.address, 5000]],
+        splits,
         expTimestamp
       );
       listingSignature = await createSaleSignature(
