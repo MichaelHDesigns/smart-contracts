@@ -54,22 +54,12 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         _verifySaleSignatures(_tokenData, _saleData, collectionAddress, collection.owner());
 
         uint saleProceedingsToSend = _saleData.price;
-        uint protocolFeeAmount = (_saleData.price * protocolFee.shares) / _feeDenominator();
-        AddressUpgradeable.sendValue(protocolFee.account, protocolFeeAmount);
-        saleProceedingsToSend -= protocolFeeAmount;
+        saleProceedingsToSend -= _takeProtocolFee(_saleData.price);
 
         uint amountToSplit = saleProceedingsToSend;
         Ownership.Royalties memory royalties = collection.getRoyalties(_tokenData.id);
         if (royalties.splits.length > 0) {
-            for (uint i; i < royalties.splits.length; i++) {
-                uint splitAmount = (amountToSplit * royalties.splits[i].shares) / _feeDenominator();
-                if(i == royalties.splits.length - 1) {
-                    AddressUpgradeable.sendValue(royalties.splits[i].account, saleProceedingsToSend);
-                } else {
-                    AddressUpgradeable.sendValue(royalties.splits[i].account, splitAmount);
-                    saleProceedingsToSend -= splitAmount;
-                }
-            }
+            _distributeSplits(royalties.splits, amountToSplit);
         } else {
             AddressUpgradeable.sendValue(payable(collection.owner()), amountToSplit);
         }
@@ -94,28 +84,41 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         _verifySaleSignatures(_tokenData, _saleData, collectionAddress, tokenOwner);
 
         uint saleProceedingsToSend = _saleData.price;
-        uint protocolFeeAmount = (_saleData.price * protocolFee.shares) / _feeDenominator();
-        AddressUpgradeable.sendValue(protocolFee.account, protocolFeeAmount);
-        saleProceedingsToSend -= protocolFeeAmount;
+        saleProceedingsToSend -= _takeProtocolFee(_saleData.price);
 
         Ownership.Royalties memory royalties = collection.getRoyalties(_tokenData.id);
+        uint royaltyAmount;
         if (royalties.splits.length > 0) {
-            uint royaltyAmount = (_saleData.price * royalties.percentage) / _feeDenominator();
-            for (uint i; i < royalties.splits.length; i++) {
-                uint splitAmount = (royaltyAmount * royalties.splits[i].shares) / _feeDenominator();
-                AddressUpgradeable.sendValue(royalties.splits[i].account, splitAmount);
-                saleProceedingsToSend -= splitAmount;
-            }
+            royaltyAmount = (_saleData.price * royalties.percentage) / _feeDenominator();
+            _distributeSplits(royalties.splits, royaltyAmount);
         } else {
             Ownership.Split memory baseRoyalty = collection.getBaseRoyalty();
-            uint royaltyAmount = (_saleData.price * baseRoyalty.shares) / _feeDenominator();
+            royaltyAmount = (_saleData.price * baseRoyalty.shares) / _feeDenominator();
             AddressUpgradeable.sendValue(baseRoyalty.account, royaltyAmount);
-            saleProceedingsToSend -= royaltyAmount;
         }
+        saleProceedingsToSend -= royaltyAmount;
 
         AddressUpgradeable.sendValue(payable(tokenOwner), saleProceedingsToSend);
 
         collection.safeTransferFrom(tokenOwner, msg.sender, _tokenData.id);
+    }
+
+    function _takeProtocolFee(uint _price) internal returns (uint protocolFeeAmount) {
+        protocolFeeAmount = (_price * protocolFee.shares) / _feeDenominator();
+        AddressUpgradeable.sendValue(protocolFee.account, protocolFeeAmount);
+    }
+
+    function _distributeSplits(Ownership.Split[] memory splits, uint _amountToSplit) internal {
+        uint amountToSend = _amountToSplit;
+        for (uint i; i < splits.length; i++) {
+            uint splitAmount = (_amountToSplit * splits[i].shares) / _feeDenominator();
+            if(i == splits.length - 1) {
+                AddressUpgradeable.sendValue(splits[i].account, amountToSend);
+            } else {
+                AddressUpgradeable.sendValue(splits[i].account, splitAmount);
+                amountToSend -= splitAmount;
+            }
+        }
     }
 
     function _verifySaleSignatures(
