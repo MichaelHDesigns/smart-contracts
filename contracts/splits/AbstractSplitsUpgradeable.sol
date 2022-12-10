@@ -28,7 +28,7 @@ abstract contract AbstractSplitsUpgradeable is IERC2981Upgradeable, ERC721Upgrad
         _setDefaultRoyalty(_royaltyPct);
     }
 
-    function royaltyInfo(uint _tokenId, uint _salePrice) public view virtual override returns (address, uint) {
+    function royaltyInfo(uint _tokenId, uint _salePrice) external view virtual override returns (address, uint) {
         _requireMinted(_tokenId);
         uint royaltyAmount = (_salePrice * feeNumerator) / _feeDenominator();
 
@@ -50,16 +50,17 @@ abstract contract AbstractSplitsUpgradeable is IERC2981Upgradeable, ERC721Upgrad
     }
 
     function _checkSplits(Ownership.Split[] memory _splits) internal pure returns (bool) {
+        require(_splits.length <= 5, "AbstractSplits::_checkSplits: Can only split up to 5 addresses.");
         uint totalShares;
         for (uint i = 0; i < _splits.length; i++) {
-            require(_splits[i].account != address(0x0), "AbstractSplits::_setSplits: Invalid account.");
-            require(_splits[i].shares > 0, "AbstractSplits::_setSplits: Shares value must be greater than 0.");
+            require(_splits[i].account != address(0x0), "AbstractSplits::_checkSplits: Invalid account.");
+            require(_splits[i].shares > 0, "AbstractSplits::_checkSplits: Shares value must be greater than 0.");
             totalShares += _splits[i].shares;
         }
         return totalShares <= _feeDenominator();
     }
 
-    function getBaseRoyalty() public view returns (Ownership.Split memory) {
+    function getBaseRoyalty() external view returns (Ownership.Split memory) {
         return Ownership.Split(payable(owner()), feeNumerator);
     }
 

@@ -49,26 +49,9 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         require(!paused(), "ArttacaMarketplaceUpgradeable::buyAndMint: cannot mint and buy while is paused.");
         require(msg.value >= _saleData.price, "ArttacaMarketplaceUpgradeable::buyAndMint: Value sent is insufficient.");
 
-        require(block.timestamp <= _saleData.listingExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Listing signature is probably expired.");
-        require(block.timestamp <= _saleData.nodeExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is probably expired.");
         ERC721 collection = ERC721(collectionAddress);
-        require(
-            _verifySignature(
-                Marketplace.hashListing(collectionAddress, _tokenData, _saleData, false),
-                collection.owner(),
-                _saleData.listingSignature
-            ),
-            "ArttacaMarketplaceUpgradeable:buyAndMint:: Listing signature is not valid."
-        );
 
-        bytes32 messageHash = keccak256(Marketplace.hashListing(collectionAddress, _tokenData, _saleData, true));
-        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-        address nodeSignerRecovered = recoverSigner(ethSignedMessageHash, slice(_saleData.nodeSignature, 0, 65));
-
-        require(
-            isOperator(nodeSignerRecovered),
-            "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is not from a valid operator."
-        );
+        _verifySaleSignatures(_tokenData, _saleData, collectionAddress, collection.owner());
 
         uint saleProceedingsToSend = _saleData.price;
         uint protocolFeeAmount = (_saleData.price * protocolFee.shares) / _feeDenominator();
@@ -80,8 +63,12 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         if (royalties.splits.length > 0) {
             for (uint i; i < royalties.splits.length; i++) {
                 uint splitAmount = (amountToSplit * royalties.splits[i].shares) / _feeDenominator();
-                AddressUpgradeable.sendValue(royalties.splits[i].account, splitAmount);
-                saleProceedingsToSend -= splitAmount;
+                if(i == royalties.splits.length - 1) {
+                    AddressUpgradeable.sendValue(royalties.splits[i].account, saleProceedingsToSend);
+                } else {
+                    AddressUpgradeable.sendValue(royalties.splits[i].account, splitAmount);
+                    saleProceedingsToSend -= splitAmount;
+                }
             }
         } else {
             AddressUpgradeable.sendValue(payable(collection.owner()), amountToSplit);
@@ -103,35 +90,8 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
 
         ERC721 collection = ERC721(collectionAddress);
         address tokenOwner = collection.ownerOf(_tokenData.id);
-        require(
-            _verifySignature(
-                abi.encodePacked(
-                    collectionAddress,
-                    _tokenData.id,
-                    _saleData.price,
-                    _saleData.listingExpTimestamp
-                ),
-                tokenOwner,
-                _saleData.listingSignature
-            ),
-            "ArttacaMarketplaceUpgradeable:buyAndMint:: Owner signature is not valid."
-        );
 
-        bytes32 messageHash = keccak256(
-            abi.encodePacked(
-                collectionAddress,
-                _tokenData.id,
-                _saleData.price,
-                _saleData.nodeExpTimestamp
-            )
-        );
-        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-        address nodeSignerRecovered = recoverSigner(ethSignedMessageHash, slice(_saleData.nodeSignature, 0, 65));
-
-        require(
-            isOperator(nodeSignerRecovered),
-            "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is not from a valid operator."
-        );
+        _verifySaleSignatures(_tokenData, _saleData, collectionAddress, tokenOwner);
 
         uint saleProceedingsToSend = _saleData.price;
         uint protocolFeeAmount = (_saleData.price * protocolFee.shares) / _feeDenominator();
@@ -156,6 +116,34 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         AddressUpgradeable.sendValue(payable(tokenOwner), saleProceedingsToSend);
 
         collection.safeTransferFrom(tokenOwner, msg.sender, _tokenData.id);
+    }
+
+    function _verifySaleSignatures(
+        Marketplace.TokenData calldata _tokenData, 
+        Marketplace.SaleData calldata _saleData,
+        address collectionAddress,
+        address listingSigner
+    ) internal view {
+        require(block.timestamp <= _saleData.listingExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Listing signature is probably expired.");
+        require(block.timestamp <= _saleData.nodeExpTimestamp, "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is probably expired.");
+        
+        require(
+            _verifySignature(
+                Marketplace.hashListing(collectionAddress, _tokenData, _saleData, false),
+                listingSigner,
+                _saleData.listingSignature
+            ),
+            "ArttacaMarketplaceUpgradeable:buyAndMint:: Listing signature is not valid."
+        );
+
+        bytes32 messageHash = keccak256(Marketplace.hashListing(collectionAddress, _tokenData, _saleData, true));
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+        address nodeSignerRecovered = recoverSigner(ethSignedMessageHash, slice(_saleData.nodeSignature, 0, 65));
+
+        require(
+            isOperator(nodeSignerRecovered),
+            "ArttacaMarketplaceUpgradeable:buyAndMint:: Node signature is not from a valid operator."
+        );
     }
 
     /**

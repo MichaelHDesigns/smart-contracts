@@ -7,7 +7,6 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
 
 import "../../splits/AbstractSplitsUpgradeable.sol";
 import "../../utils/VerifySignature.sol";
@@ -33,7 +32,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         string memory _symbol,
         string memory baseURI_,
         uint96 _royaltyPct
-    ) public initializer {
+    ) external initializer {
         __ERC721_init(_name, _symbol);
         __Ownable_init();
         __Pausable_init();
@@ -70,7 +69,7 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         _setRoyalties(_tokenData.id, _tokenData.royalties);
     }
 
-    function tokensOfOwner(address _owner) public view returns(uint[] memory ) {
+    function tokensOfOwner(address _owner) external view returns(uint[] memory ) {
         uint tokenCount = balanceOf(_owner);
         if (tokenCount == 0) {
             return new uint[](0);
@@ -84,11 +83,11 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
         }
     }
 
-    function pause() public virtual onlyOwner {
+    function pause() external virtual onlyOwner {
         _pause();
     }
 
-    function unpause() public virtual onlyOwner {
+    function unpause() external virtual onlyOwner {
         _unpause();
     }
 
@@ -100,6 +99,21 @@ contract ArttacaERC721Upgradeable is OwnableUpgradeable, VerifySignature, ERC721
     function tokenURI(uint _tokenId) public view override(ERC721Upgradeable, ArttacaERC721URIStorageUpgradeable) returns (string memory) {
         require(_exists(_tokenId), "ArttacaERC721Upgradeable::tokenURI: token has not been minted.");
         return ArttacaERC721URIStorageUpgradeable.tokenURI(_tokenId);
+    }
+
+    struct TokenInformation {
+        address owner;
+        string tokenURI;
+        Ownership.Royalties royalties;
+    }
+
+    function getTokenInformation(uint _tokenId) external view returns (TokenInformation memory tokenInformation) {
+        require(_exists(_tokenId), "ArttacaERC721Upgradeable::getTokenInformation: token has not been minted.");
+        return TokenInformation({
+            owner: ownerOf(_tokenId),
+            tokenURI: tokenURI(_tokenId),
+            royalties: getRoyalties(_tokenId)
+        });
     }
 
     function _baseURI() internal view override returns (string memory) {
