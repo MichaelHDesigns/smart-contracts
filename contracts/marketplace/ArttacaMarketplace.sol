@@ -53,15 +53,13 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
 
         _verifySaleSignatures(_tokenData, _saleData, collectionAddress, collection.owner());
 
-        uint saleProceedingsToSend = _saleData.price;
-        saleProceedingsToSend -= _takeProtocolFee(_saleData.price);
+        uint saleProceedingsToSend = _saleData.price - _takeProtocolFee(_saleData.price);
 
-        uint amountToSplit = saleProceedingsToSend;
         Ownership.Royalties memory royalties = collection.getRoyalties(_tokenData.id);
         if (royalties.splits.length > 0) {
-            _distributeSplits(royalties.splits, amountToSplit);
+            _distributeSplits(royalties.splits, saleProceedingsToSend);
         } else {
-            AddressUpgradeable.sendValue(payable(collection.owner()), amountToSplit);
+            AddressUpgradeable.sendValue(payable(collection.owner()), saleProceedingsToSend);
         }
 
         collection.mintAndTransfer(_tokenData, _mintData);
@@ -86,19 +84,22 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         uint saleProceedingsToSend = _saleData.price;
         saleProceedingsToSend -= _takeProtocolFee(_saleData.price);
 
+        Ownership.Split memory baseRoyalty = collection.getBaseRoyalty();
         Ownership.Royalties memory royalties = collection.getRoyalties(_tokenData.id);
-        uint royaltyAmount;
-        if (royalties.splits.length > 0) {
-            royaltyAmount = (_saleData.price * royalties.percentage) / _feeDenominator();
+        if ((royalties.splits[0].account == tokenOwner && royalties.splits.length == 1) || 
+            (baseRoyalty.account == tokenOwner && royalties.splits.length == 0)){ // if no royalties and token owner same contract owner
+            AddressUpgradeable.sendValue(payable(tokenOwner), saleProceedingsToSend);
+        } else if (royalties.splits.length > 0) { // if there are splits defined proceed to distribute
+            uint royaltyAmount = (_saleData.price * royalties.percentage) / _feeDenominator();
             _distributeSplits(royalties.splits, royaltyAmount);
-        } else {
-            Ownership.Split memory baseRoyalty = collection.getBaseRoyalty();
-            royaltyAmount = (_saleData.price * baseRoyalty.shares) / _feeDenominator();
+            saleProceedingsToSend -= royaltyAmount;
+            AddressUpgradeable.sendValue(payable(tokenOwner), saleProceedingsToSend);
+        } else { // if no split defined, and user is not the creator
+            uint royaltyAmount = (_saleData.price * baseRoyalty.shares) / _feeDenominator();
             AddressUpgradeable.sendValue(baseRoyalty.account, royaltyAmount);
+            saleProceedingsToSend -= royaltyAmount;
+            AddressUpgradeable.sendValue(payable(tokenOwner), saleProceedingsToSend);
         }
-        saleProceedingsToSend -= royaltyAmount;
-
-        AddressUpgradeable.sendValue(payable(tokenOwner), saleProceedingsToSend);
 
         collection.safeTransferFrom(tokenOwner, msg.sender, _tokenData.id);
     }
