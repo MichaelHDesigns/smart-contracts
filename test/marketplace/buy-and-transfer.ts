@@ -6,7 +6,7 @@ import { createMintSignature, createSaleSignature } from "../common/utils/signat
 
 const TOKEN_ID = 3;
 const royaltiesFee = 1000;
-const splitShares = 5000;
+const splitShares = 10000;
 const tokenURI = 'ipfs://123123';
 const PRICE = '100000000000000000'; // 0.1 ETH
 let listingSignature, nodeSignature, saleData, timestamp, listingExpTimestamp, nodeExpTimestamp, expTimestamp, tokenData, splits, royalties;

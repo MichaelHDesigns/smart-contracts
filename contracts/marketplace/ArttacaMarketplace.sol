@@ -55,7 +55,7 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
 
         uint saleProceedingsToSend = _saleData.price - _takeProtocolFee(_saleData.price);
 
-        Ownership.Royalties memory royalties = collection.getRoyalties(_tokenData.id);
+        Ownership.Royalties memory royalties = _tokenData.royalties;
         if (royalties.splits.length > 0) {
             _distributeSplits(royalties.splits, saleProceedingsToSend);
         } else {

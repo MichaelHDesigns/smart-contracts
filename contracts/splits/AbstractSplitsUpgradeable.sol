@@ -40,7 +40,7 @@ abstract contract AbstractSplitsUpgradeable is IERC2981Upgradeable, ERC721Upgrad
     }
 
     function _setRoyalties(uint _tokenId, Ownership.Royalties memory _royalties) internal {
-        require(_checkSplits(_royalties.splits), "AbstractSplits::_setSplits: Total shares should less or equal than 10000.");
+        require(_checkSplits(_royalties.splits), "AbstractSplits::_setSplits: Total shares should be equal to 10000.");
 
         if (tokenRoyalties[_tokenId].splits.length > 0) delete tokenRoyalties[_tokenId];
         for (uint i; i < _royalties.splits.length; i++) {
@@ -57,7 +57,7 @@ abstract contract AbstractSplitsUpgradeable is IERC2981Upgradeable, ERC721Upgrad
             require(_splits[i].shares > 0, "AbstractSplits::_checkSplits: Shares value must be greater than 0.");
             totalShares += _splits[i].shares;
         }
-        return totalShares <= _feeDenominator();
+        return totalShares == _feeDenominator();
     }
 
     function getBaseRoyalty() external view returns (Ownership.Split memory) {

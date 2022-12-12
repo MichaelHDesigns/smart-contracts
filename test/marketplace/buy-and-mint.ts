@@ -7,7 +7,7 @@ import { createMintSignature, createSaleSignature } from "../common/utils/signat
 const feeDenominator = 10000;
 const protocolFee = 300;
 const royaltiesFee = 1000;
-const splitShares = 5000;
+const splitShares = 10000;
 const TOKEN_ID = 3;
 const tokenURI = 'ipfs://123123';
 const PRICE = '1000000000000000000'; // 1 ETH

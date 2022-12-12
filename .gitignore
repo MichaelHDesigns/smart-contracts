@@ -30,3 +30,5 @@ artifacts
 
 # mac
 .DS_Store
+
+remix-slither-report.json

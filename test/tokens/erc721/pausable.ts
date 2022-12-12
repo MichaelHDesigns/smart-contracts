@@ -27,7 +27,7 @@ describe("ArttacaERC721Upgradeable pausable", function () {
   it("Can't transfer when paused", async function () {
 
     const royaltiesFee = 1000;
-    const splitShares = 5000;
+    const splitShares = 10000;
     const splits = [[owner.address, splitShares]];
     const royalties = [splits, royaltiesFee]
 

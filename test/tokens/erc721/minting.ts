@@ -11,7 +11,7 @@ describe("ArttacaERC721Upgradeable minting", function () {
   const TOKEN_ID = 3;
   const tokenURI = 'ipfs://123123';
   const royaltiesFee = 1000;
-  const splitShares = 5000;
+  const splitShares = 10000;
   beforeEach(async () => {
     ({ collection, owner, user, factory } = await loadFixture(deployCollection));
     splits = [[owner.address, splitShares]];
