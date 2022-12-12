@@ -16,7 +16,7 @@ const tokenURI = 'ipfs://123123';
 const PRICE = '1000000000000000000'; // 1 ETH
 let mintSignature, listingSignature, nodeSignature, mintData, saleData, timestamp, expTimestamp, listingExpTimestamp, nodeExpTimestamp, tokenData, splits, royalties;
 
-describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
+describe("ArttacaMarketplaceUpgradeable primary sale splits", function () {
   let factory, erc721, owner, user , collection, marketplace, operator, protocol, minter, split1, split2;
   beforeEach(async () => {
       ({ factory, erc721, owner, user , collection, marketplace, operator, protocol, minter, split1, split2 } = await loadFixture(deployMarketplace));
@@ -56,54 +56,54 @@ describe("ArttacaMarketplaceUpgradeable buy and mint", function () {
       await tx.wait()
   });
 
-  it("Minter receives full payment if no splits", async function () {
+  // it("Minter receives full payment if no splits", async function () {
 
-    const priceBigNumber = BigNumber.from(PRICE);
+  //   const priceBigNumber = BigNumber.from(PRICE);
 
-    const expectedProtocolFee = priceBigNumber.mul(protocolFee).div(feeDenominator);
-    const expectedMinterFee = priceBigNumber.sub(expectedProtocolFee);
+  //   const expectedProtocolFee = priceBigNumber.mul(protocolFee).div(feeDenominator);
+  //   const expectedMinterFee = priceBigNumber.sub(expectedProtocolFee);
 
-    const userBalanceBefore = await user.getBalance();
-    const minterBalanceBefore = await minter.getBalance();
-    const protocolBalanceBefore = await protocol.getBalance();
+  //   const userBalanceBefore = await user.getBalance();
+  //   const minterBalanceBefore = await minter.getBalance();
+  //   const protocolBalanceBefore = await protocol.getBalance();
 
-    const emptyRoyalties = [[], 0];
-    mintSignature = await createMintSignature(
-      collection.address,
-      minter,
-      TOKEN_ID,
-      tokenURI,
-      emptyRoyalties,
-      expTimestamp
-    );
+  //   const emptyRoyalties = [[], 0];
+  //   mintSignature = await createMintSignature(
+  //     collection.address,
+  //     minter,
+  //     TOKEN_ID,
+  //     tokenURI,
+  //     emptyRoyalties,
+  //     expTimestamp
+  //   );
 
-    tokenData = [ TOKEN_ID, tokenURI, emptyRoyalties ]
-    mintData = [ user.address, expTimestamp, mintSignature ];
-    saleData = [ PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
+  //   tokenData = [ TOKEN_ID, tokenURI, emptyRoyalties ]
+  //   mintData = [ user.address, expTimestamp, mintSignature ];
+  //   saleData = [ PRICE, listingExpTimestamp, nodeExpTimestamp, listingSignature, nodeSignature ];
 
-    const tx = await marketplace.connect(user).buyAndMint(
-      collection.address,
-      tokenData, 
-      mintData,
-      saleData,
-      {value: PRICE}
-    );
-    await tx.wait();
+  //   const tx = await marketplace.connect(user).buyAndMint(
+  //     collection.address,
+  //     tokenData, 
+  //     mintData,
+  //     saleData,
+  //     {value: PRICE}
+  //   );
+  //   await tx.wait();
 
-    const minterBalanceAfter = await minter.getBalance();
+  //   const minterBalanceAfter = await minter.getBalance();
 
-    const userBalanceDiff = (await user.getBalance()).sub(userBalanceBefore);
-    const protocolBalanceDiff = (await protocol.getBalance()).sub(protocolBalanceBefore);
-    const minterBalanceDiff = (await minter.getBalance()).sub(minterBalanceBefore);
+  //   const userBalanceDiff = (await user.getBalance()).sub(userBalanceBefore);
+  //   const protocolBalanceDiff = (await protocol.getBalance()).sub(protocolBalanceBefore);
+  //   const minterBalanceDiff = (await minter.getBalance()).sub(minterBalanceBefore);
 
-    expect(await collection.totalSupply()).to.equal(1);
-    expect((await collection.tokensOfOwner(user.address)).length).to.equal(1);
-    expect((await collection.tokensOfOwner(user.address))[0]).to.equal(TOKEN_ID);
-    expect(await collection.tokenOfOwnerByIndex(user.address, 0)).to.equal(TOKEN_ID);
-    expect(protocolBalanceDiff).to.equal(expectedProtocolFee);
-    expect(minterBalanceDiff).to.equal(expectedMinterFee);
-    expect(userBalanceDiff).to.be.below(userBalanceBefore.sub(priceBigNumber));
-  });
+  //   expect(await collection.totalSupply()).to.equal(1);
+  //   expect((await collection.tokensOfOwner(user.address)).length).to.equal(1);
+  //   expect((await collection.tokensOfOwner(user.address))[0]).to.equal(TOKEN_ID);
+  //   expect(await collection.tokenOfOwnerByIndex(user.address, 0)).to.equal(TOKEN_ID);
+  //   expect(protocolBalanceDiff).to.equal(expectedProtocolFee);
+  //   expect(minterBalanceDiff).to.equal(expectedMinterFee);
+  //   expect(userBalanceDiff).to.be.below(userBalanceBefore.sub(priceBigNumber));
+  // });
 
   it("User can buy and mint with splits", async function () {
 

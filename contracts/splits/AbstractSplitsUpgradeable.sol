@@ -40,9 +40,6 @@ abstract contract AbstractSplitsUpgradeable is IERC2981Upgradeable, ERC721Upgrad
     }
 
     function _setRoyalties(uint _tokenId, Ownership.Royalties memory _royalties) internal {
-        if(_royalties.splits.length == 0) {
-            return;
-        }
         require(_checkSplits(_royalties.splits), "AbstractSplits::_setSplits: Total shares should be equal to 10000.");
 
         if (tokenRoyalties[_tokenId].splits.length > 0) delete tokenRoyalties[_tokenId];

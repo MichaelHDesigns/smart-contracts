@@ -56,11 +56,7 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         uint saleProceedingsToSend = _saleData.price - _takeProtocolFee(_saleData.price);
 
         Ownership.Royalties memory royalties = _tokenData.royalties;
-        if (royalties.splits.length > 0) {
-            _distributeSplits(royalties.splits, saleProceedingsToSend);
-        } else {
-            AddressUpgradeable.sendValue(payable(collection.owner()), saleProceedingsToSend);
-        }
+        _distributeSplits(royalties.splits, saleProceedingsToSend);
 
         collection.mintAndTransfer(_tokenData, _mintData);
     }
@@ -84,22 +80,14 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
         uint saleProceedingsToSend = _saleData.price;
         saleProceedingsToSend -= _takeProtocolFee(_saleData.price);
 
-        Ownership.Split memory baseRoyalty = collection.getBaseRoyalty();
         Ownership.Royalties memory royalties = collection.getRoyalties(_tokenData.id);
-        if ((royalties.splits[0].account == tokenOwner && royalties.splits.length == 1) || 
-            (baseRoyalty.account == tokenOwner && royalties.splits.length == 0)){ // if no royalties and token owner same contract owner
-            AddressUpgradeable.sendValue(payable(tokenOwner), saleProceedingsToSend);
-        } else if (royalties.splits.length > 0) { // if there are splits defined proceed to distribute
-            uint royaltyAmount = (_saleData.price * royalties.percentage) / _feeDenominator();
+        if (!(royalties.splits[0].account == tokenOwner && royalties.splits.length == 1)) {
+            uint royaltyAmount = (saleProceedingsToSend * royalties.percentage) / _feeDenominator();
             _distributeSplits(royalties.splits, royaltyAmount);
             saleProceedingsToSend -= royaltyAmount;
-            AddressUpgradeable.sendValue(payable(tokenOwner), saleProceedingsToSend);
-        } else { // if no split defined, and user is not the creator
-            uint royaltyAmount = (_saleData.price * baseRoyalty.shares) / _feeDenominator();
-            AddressUpgradeable.sendValue(baseRoyalty.account, royaltyAmount);
-            saleProceedingsToSend -= royaltyAmount;
-            AddressUpgradeable.sendValue(payable(tokenOwner), saleProceedingsToSend);
         }
+
+        AddressUpgradeable.sendValue(payable(tokenOwner), saleProceedingsToSend);
 
         collection.safeTransferFrom(tokenOwner, msg.sender, _tokenData.id);
     }
@@ -107,6 +95,13 @@ contract ArttacaMarketplaceUpgradeable is VerifySignature, PausableUpgradeable, 
     function _takeProtocolFee(uint _price) internal returns (uint protocolFeeAmount) {
         protocolFeeAmount = (_price * protocolFee.shares) / _feeDenominator();
         AddressUpgradeable.sendValue(protocolFee.account, protocolFeeAmount);
+        _returnIfAdditionalFunds(_price);
+    }
+
+    function _returnIfAdditionalFunds(uint _price) internal {
+        if (msg.value > _price) {
+            AddressUpgradeable.sendValue(payable(msg.sender), msg.value - _price);
+        }
     }
 
     function _distributeSplits(Ownership.Split[] memory splits, uint _amountToSplit) internal {
