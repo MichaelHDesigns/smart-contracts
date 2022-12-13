@@ -9,10 +9,13 @@ const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
-      chainId: 2330
+      chainId: 2330,
+      network: 5,
+      url: process.env.RPC_URL,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
     },
     goerli: {
-      network: 5,
+      network: 8,
       url: process.env.RPC_URL,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
     }
