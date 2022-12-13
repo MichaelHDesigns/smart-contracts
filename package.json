@@ -4,7 +4,7 @@
   "description": "Arttaca Marketplace smart contracts",
   "main": "scripts/deploy.ts",
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^1.0.2",
+    "@nomicfoundation/hardhat-toolbox": "2.0.0",
     "@types/mocha": "^9.1.1",
     "dot-env": "^0.0.1",
     "hardhat": "^2.11.1",
