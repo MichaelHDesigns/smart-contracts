@@ -9,6 +9,7 @@ const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
+      chainId: 2330
     },
     goerli: {
       network: 5,
