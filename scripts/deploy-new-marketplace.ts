@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 
-const factoryAddress = "0xC7345b93BF061776791e02C1156A1914Ed11E88F"
+const factoryAddress = "0x6C20eE5CD4EeF0D7CcfF731AC5C8FC8556BC7C22"
 async function main() {
 
   const ArttacaERC721FactoryUpgradeable = await ethers.getContractFactory("ArttacaERC721FactoryUpgradeable");
